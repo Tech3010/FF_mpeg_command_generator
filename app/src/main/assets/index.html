@@ -1,0 +1,2505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
+  <title>FFmpeg Offline Studio · Step-by-Step Workflow &amp; POCO X7 Pro Estimator</title>
+  <style>
+    :root {
+      --bg: #0b0e14;
+      --bg-elev: #131822;
+      --bg-card: #19202e;
+      --bg-input: #0f131c;
+      --border: #283246;
+      --border-focus: #3b82f6;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --accent: #3b82f6;
+      --accent-soft: rgba(59, 130, 246, 0.15);
+      --emerald: #10b981;
+      --emerald-soft: rgba(16, 185, 129, 0.15);
+      --amber: #f59e0b;
+      --amber-soft: rgba(245, 158, 11, 0.15);
+      --rose: #f43f5e;
+      --rose-soft: rgba(244, 63, 94, 0.15);
+      --violet: #8b5cf6;
+      --violet-soft: rgba(139, 92, 246, 0.15);
+      --radius: 12px;
+      --radius-sm: 8px;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    [data-theme="light"] {
+      --bg: #f8fafc;
+      --bg-elev: #ffffff;
+      --bg-card: #f1f5f9;
+      --bg-input: #ffffff;
+      --border: #cbd5e1;
+      --border-focus: #2563eb;
+      --text: #0f172a;
+      --text-muted: #475569;
+      --accent: #2563eb;
+      --accent-soft: rgba(37, 99, 235, 0.1);
+      --emerald: #059669;
+      --emerald-soft: rgba(5, 150, 105, 0.12);
+      --amber: #d97706;
+      --amber-soft: rgba(217, 119, 6, 0.12);
+      --rose: #e11d48;
+      --rose-soft: rgba(225, 29, 72, 0.12);
+      --violet: #7c3aed;
+      --violet-soft: rgba(124, 58, 237, 0.12);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      line-height: 1.5;
+      min-height: 100vh;
+      padding-bottom: 56px;
+    }
+
+    .app-shell {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    /* Header */
+    .app-header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 16px 20px;
+      background: var(--bg-elev);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 14px;
+    }
+    .brand-row { display: flex; align-items: center; gap: 12px; }
+    .brand-badge {
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent), var(--violet));
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-weight: 800; font-family: var(--font-mono); font-size: 16px;
+      flex-shrink: 0;
+    }
+    .brand-title { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
+    .brand-sub { font-size: 12px; color: var(--text-muted); }
+    .header-actions { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+
+    /* Step Progress Bar */
+    .step-nav {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+      gap: 8px;
+      margin-bottom: 18px;
+      position: sticky;
+      top: 8px;
+      z-index: 40;
+      background: var(--bg);
+      padding: 6px 0;
+    }
+    .step-pill-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      background: var(--bg-elev);
+      border: 1px solid var(--border);
+      color: var(--text);
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.15s ease;
+    }
+    .step-pill-btn:hover, .step-pill-btn.active {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+    .step-num {
+      width: 26px; height: 26px;
+      border-radius: 999px;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 800;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .step-num.s1 { background: var(--emerald); }
+    .step-num.s2 { background: var(--accent); }
+    .step-num.s3 { background: var(--amber); }
+    .step-num.s4 { background: var(--violet); }
+    .step-num.s5 { background: var(--rose); }
+    .step-lbl-title { font-size: 12px; font-weight: 700; display: block; line-height: 1.2; }
+    .step-lbl-sub { font-size: 11px; color: var(--text-muted); display: block; }
+
+    /* Step Section Wrapper */
+    .step-block {
+      background: var(--bg-elev);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      margin-bottom: 20px;
+      position: relative;
+    }
+    .step-block.step-1 { border-top: 3px solid var(--emerald); }
+    .step-block.step-2 { border-top: 3px solid var(--accent); }
+    .step-block.step-3 { border-top: 3px solid var(--amber); }
+    .step-block.step-4 { border-top: 3px solid var(--violet); }
+    .step-block.step-5 { border-top: 3px solid var(--rose); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25); }
+    .step-block.wizard-hidden { display: none !important; }
+    .wizard-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+    .wizard-top-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+      padding: 10px 14px;
+      background: var(--bg-elev);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+    }
+    .wizard-progress-text {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+    }
+    .btn-next {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #ffffff;
+      padding: 10px 20px;
+      font-size: 14px;
+    }
+    .btn-prev {
+      padding: 10px 18px;
+      font-size: 14px;
+    }
+    .step-pill-btn.completed .step-num {
+      box-shadow: 0 0 0 2px var(--emerald);
+    }
+
+    .step-banner {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .step-banner-left { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .step-tag {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 800;
+      padding: 4px 10px;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .step-tag.t1 { background: var(--emerald-soft); color: var(--emerald); }
+    .step-tag.t2 { background: var(--accent-soft); color: var(--accent); }
+    .step-tag.t3 { background: var(--amber-soft); color: var(--amber); }
+    .step-tag.t4 { background: var(--violet-soft); color: var(--violet); }
+    .step-tag.t5 { background: var(--rose-soft); color: var(--rose); }
+    .step-heading { font-size: 16px; font-weight: 700; }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      padding: 8px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 13px; font-weight: 600;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .btn:hover { border-color: var(--accent); }
+    .btn-primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #ffffff;
+    }
+    .btn-primary:hover { filter: brightness(1.1); }
+    .btn-emerald {
+      background: var(--emerald);
+      border-color: var(--emerald);
+      color: #ffffff;
+    }
+
+    /* Mode Tabs */
+    .mode-tabs {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .mode-tab {
+      padding: 12px 14px;
+      border-radius: var(--radius);
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 600;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .mode-tab span.tab-sub { font-size: 11px; font-weight: 400; opacity: 0.8; }
+    .mode-tab.active {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+      color: var(--text);
+    }
+
+    /* Explorer & Inspector Cards */
+    .explorer-Controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 12px;
+    }
+    .picker-card {
+      background: var(--bg-card);
+      border: 1px dashed var(--border);
+      border-radius: var(--radius-sm);
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .picker-card.active-mode {
+      border-style: solid;
+      border-color: var(--emerald);
+      background: var(--emerald-soft);
+    }
+    .inspector-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(185px, 1fr));
+      gap: 10px;
+    }
+    .insp-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+    }
+    .insp-label { font-size: 11px; color: var(--text-muted); display: block; text-transform: uppercase; font-weight: 700; letter-spacing: 0.03em; }
+    .insp-val { font-size: 15px; font-weight: 700; color: var(--text); font-family: var(--font-mono); margin-top: 4px; display: block; word-break: break-all; }
+    .insp-sub { font-size: 12px; color: var(--text-muted); margin-top: 4px; display: block; }
+
+    /* Status Pill & Command Box */
+    .status-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px; font-weight: 600;
+      background: var(--emerald-soft);
+      color: var(--emerald);
+    }
+    .status-pill.warn {
+      background: var(--amber-soft);
+      color: var(--amber);
+    }
+    .cmd-box {
+      width: 100%;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1.6;
+      background: var(--bg-input);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      color: var(--text);
+      word-break: break-all;
+      margin-bottom: 10px;
+      resize: none;
+      display: block;
+    }
+    .cmd-box:focus {
+      outline: 2px solid var(--accent);
+    }
+    .token-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+    .cmd-token {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text);
+      cursor: pointer;
+      transition: all 0.12s ease;
+    }
+    .cmd-token:hover, .cmd-token.active {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+    }
+    .token-inspector {
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      background: var(--bg-card);
+      font-size: 13px;
+      color: var(--text);
+      border-left: 3px solid var(--accent);
+    }
+
+    /* POCO X7 Pro Hardware Estimator Elements */
+    .poco-chip {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: var(--violet-soft);
+      color: var(--violet);
+      border: 1px solid var(--violet);
+    }
+    .poco-specs-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .spec-pill {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 8px 10px;
+      font-size: 12px;
+    }
+    .spec-pill-label { font-size: 11px; color: var(--text-muted); display: block; }
+    .spec-pill-val { font-weight: 700; color: var(--text); font-family: var(--font-mono); }
+    .poco-controls-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 12px;
+      margin-bottom: 14px;
+      padding: 12px;
+      background: var(--bg-card);
+      border-radius: var(--radius-sm);
+    }
+    .dur-pills { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+    .dur-btn {
+      padding: 4px 9px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      background: var(--bg-elev);
+      border: 1px solid var(--border);
+      color: var(--text);
+      cursor: pointer;
+    }
+    .dur-btn.active, .dur-btn:hover {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* Telemetry Strip */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .kpi-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 14px;
+    }
+    .kpi-label { font-size: 11px; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+    .kpi-value { font-size: 20px; font-weight: 700; margin: 4px 0 6px; font-variant-numeric: tabular-nums; }
+    .meter-bar { height: 7px; background: var(--bg-elev); border-radius: 999px; overflow: hidden; margin-bottom: 6px; }
+    .meter-fill { height: 100%; border-radius: 999px; transition: width 0.2s ease; }
+    .kpi-foot { font-size: 11px; color: var(--text-muted); }
+
+    /* Presets Bar */
+    .preset-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      margin-bottom: 16px;
+    }
+    .preset-label { font-size: 12px; font-weight: 700; color: var(--text-muted); margin-right: 4px; }
+    .preset-chip {
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 600;
+      background: var(--bg-elev);
+      border: 1px solid var(--border);
+      color: var(--text);
+      cursor: pointer;
+    }
+    .preset-chip:hover, .preset-chip.active {
+      background: var(--accent-soft);
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    /* Main Grid */
+    .studio-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(330px, 1fr));
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    .panel {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .panel-title {
+      font-size: 14px;
+      font-weight: 700;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .panel-tag {
+      font-size: 11px;
+      font-family: var(--font-mono);
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: var(--bg-elev);
+      color: var(--text-muted);
+    }
+
+    /* Controls */
+    .field-group { display: flex; flex-direction: column; gap: 6px; }
+    .field-header { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+    .field-label { font-size: 13px; font-weight: 600; color: var(--text); }
+    .field-badge {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 6px;
+      background: var(--accent-soft);
+      color: var(--accent);
+    }
+    select, input[type="text"], input[type="number"] {
+      width: 100%;
+      padding: 9px 12px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      background: var(--bg-input);
+      color: var(--text);
+      font-size: 13px;
+      font-family: var(--font-sans);
+    }
+    select:focus, input[type="text"]:focus, input[type="number"]:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+      cursor: pointer;
+      height: 6px;
+    }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    /* Dynamic Explanation Box */
+    .explain-card {
+      background: var(--bg-elev);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      font-size: 12px;
+      line-height: 1.5;
+      border-left: 3px solid var(--accent);
+    }
+    .explain-card strong { color: var(--text); font-weight: 600; }
+    .explain-effect {
+      margin-top: 6px;
+      padding-top: 6px;
+      border-top: 1px dashed var(--border);
+      color: var(--text-muted);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    /* Encyclopedia Table */
+    .encyc-search { margin-bottom: 12px; }
+    .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: var(--radius-sm); }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; }
+    th, td { padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+    th { background: var(--bg-card); font-weight: 700; color: var(--text-muted); font-size: 12px; text-transform: uppercase; }
+    td code { font-family: var(--font-mono); font-size: 12px; color: var(--accent); background: var(--accent-soft); padding: 2px 6px; border-radius: 4px; }
+    tr.active-bench-row { background: var(--accent-soft); }
+
+    .hidden { display: none !important; }
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: var(--emerald);
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+      z-index: 999;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+    .toast.show { opacity: 1; }
+
+    @media (max-width: 640px) {
+      .two-col { grid-template-columns: 1fr; }
+      .app-header { padding: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <!-- Top App Bar -->
+    <header class="app-header">
+      <div class="brand-row">
+        <div class="brand-badge">FF</div>
+        <div>
+          <h1 class="brand-title">FFmpeg Offline Studio · Step-by-Step Workflow</h1>
+          <p class="brand-sub">1. Pick File/Folder → 2. Read File Info → 3. Set Format &amp; Sharpness → 4. POCO X7 Pro Time → 5. Copy Command</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button type="button" id="btn-theme" class="btn">Light / Dark Theme</button>
+        <button type="button" id="btn-save-html" class="btn btn-primary">Download Offline .HTML</button>
+      </div>
+    </header>
+
+
+
+    <!-- Top Wizard Prev / Next Bar -->
+    <div class="wizard-top-nav" aria-label="Wizard Step Controls">
+      <button type="button" id="btn-top-prev" class="btn btn-prev" disabled>← Previous Step</button>
+      <span class="wizard-progress-text" id="wizard-progress-label">Step 1 of 5 · File / Folder Selection</span>
+      <button type="button" id="btn-top-next" class="btn btn-next">Next: File Details →</button>
+    </div>
+
+    <!-- =================================================================== -->
+    <!-- STEP 1: FILE OR FOLDER SELECTION (NATIVE APP REAL-PATH READY)       -->
+    <!-- =================================================================== -->
+    <section id="step-1-sec" class="step-block step-1" aria-label="Step 1: File or Folder Selection">
+      <div class="step-banner">
+        <div class="step-banner-left">
+          <span class="step-tag t1">Step 1 of 5</span>
+          <h2 class="step-heading">Select Your Media File or Folder</h2>
+        </div>
+        <span class="field-badge" id="bdg-pick-type">Single File</span>
+      </div>
+
+      <div class="explorer-Controls">
+        <div class="picker-card active-mode" id="card-file-picker">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:13px; font-weight:700;" id="lbl-picker-title">Choose File or Folder</span>
+            <span class="field-badge" id="bdg-path-mode">Auto Exact Path</span>
+          </div>
+          <p style="font-size:12px; color:var(--text-muted);" id="desc-picker-mode">Pick any video, audio, or folder on your POCO X7 Pro. The app automatically captures the exact folder path and reads the file's real format, bitrate, resolution, and duration.</p>
+          <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:4px;">
+            <button type="button" id="btn-open-file" class="btn btn-primary">Pick File</button>
+            <button type="button" id="btn-open-folder" class="btn">Pick Folder (Batch)</button>
+            <input type="file" id="inp-native-file" class="hidden" accept="video/*,audio/*,image/*,.mkv,.mp4,.webm,.mov,.avi,.flv,.ts,.ogv,.3gp,.mp3,.flac,.opus,.m4a,.wav,.ogg,.ac3">
+            <input type="file" id="inp-native-folder" class="hidden" webkitdirectory directory multiple>
+          </div>
+        </div>
+
+        <div class="picker-card">
+          <div class="field-group">
+            <div class="field-header"><label class="field-label" for="in-custom-dir">Detected Exact Folder Path (Auto-Filled)</label></div>
+            <input type="text" id="in-custom-dir" value="" placeholder="Auto-filled from your selected file or folder">
+          </div>
+          <div class="field-group">
+            <div class="field-header"><label class="field-label" for="in-filename">Input File Name</label></div>
+            <input type="text" id="in-filename" value="input.mp4" placeholder="Auto-filled when you pick a file">
+          </div>
+          <div class="field-group">
+            <div class="field-header"><label class="field-label" for="out-basename">Output Base Name</label></div>
+            <input type="text" id="out-basename" value="output" placeholder="Auto-filled as filename_converted">
+          </div>
+        </div>
+      </div>
+
+      <div class="wizard-footer">
+        <span style="font-size:12px; color:var(--text-muted);">Step 1 of 5</span>
+        <button type="button" class="btn btn-next" data-step-go="2">Next: File Details →</button>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- STEP 2: INSPECTED SOURCE FILE DETAILS & BITRATE DIAGNOSTICS         -->
+    <!-- =================================================================== -->
+    <section id="step-2-sec" class="step-block step-2" aria-label="Step 2: Inspected Source File Details">
+      <div class="step-banner">
+        <div class="step-banner-left">
+          <span class="step-tag t2">Step 2 of 5</span>
+          <h2 class="step-heading">Inspected File Details (Format, Bitrate Grade, Resolution &amp; Path)</h2>
+        </div>
+        <span class="status-pill" id="insp-status-badge">Ready — Pick a file in Step 1 to read live stream info</span>
+      </div>
+
+      <div class="inspector-grid" id="inspector-readout">
+        <div class="insp-box">
+          <span class="insp-label">Detected Format &amp; Header</span>
+          <span class="insp-val" id="insp-format">MP4 (Default Sample)</span>
+          <span class="insp-sub" id="insp-Signature">Reads binary container signature (avc1/hvc1/EBML)</span>
+        </div>
+        <div class="insp-box">
+          <span class="insp-label">Source Bitrate &amp; Diagnosis</span>
+          <span class="insp-val" id="insp-bitrate">~10.5 Mbps (Normal)</span>
+          <span class="insp-sub" id="insp-bitrate-grade">Normal 1080p Bitrate (Balanced)</span>
+        </div>
+        <div class="insp-box">
+          <span class="insp-label">Source Resolution &amp; Aspect</span>
+          <span class="insp-val" id="insp-res">1080 × 1920 (9:16)</span>
+          <span class="insp-sub" id="insp-fps-note">Full HD Vertical Source</span>
+        </div>
+        <div class="insp-box">
+          <span class="insp-label">Exact Duration &amp; Source Size</span>
+          <span class="insp-val" id="insp-dur-size">30.0s · 39.4 MB</span>
+          <span class="insp-sub" id="insp-comparison">Auto-synced to Step 3 &amp; Step 4</span>
+        </div>
+        <div class="insp-box">
+          <span class="insp-label">Resolved Folder &amp; Queue</span>
+          <span class="insp-val" id="insp-path-out">Auto-detected on selection</span>
+          <span class="insp-sub" id="insp-queue-count">1 file targeted</span>
+        </div>
+      </div>
+      <div class="wizard-footer">
+        <button type="button" class="btn btn-prev" data-step-go="1">← Back: File Selection</button>
+        <button type="button" class="btn btn-next" data-step-go="3">Next: Format, Quality &amp; Sharpness →</button>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- STEP 3: FORMAT, QUALITY, SHARPNESS & LIVE OUTPUT STATS              -->
+    <!-- =================================================================== -->
+    <section id="step-3-sec" class="step-block step-3" aria-label="Step 3: Output Format, Quality and Sharpness">
+      <div class="step-banner">
+        <div class="step-banner-left">
+          <span class="step-tag t3">Step 3 of 5</span>
+          <h2 class="step-heading">Configure Output Format, Quality, Sharpness, Audio &amp; Metadata</h2>
+        </div>
+        <span style="font-size:12px; color:var(--text-muted);">Every setting explains what it means &amp; what changing it affects</span>
+      </div>
+
+      <!-- Mode Switcher -->
+      <nav class="mode-tabs" role="tablist" aria-label="Studio Modes">
+        <button type="button" class="mode-tab active" data-mode="video">
+          <span>3A. Video Transcode &amp; Compress</span>
+          <span class="tab-sub">MP4, MKV, WebM, MOV, AVI, ProRes, AV1</span>
+        </button>
+        <button type="button" class="mode-tab" data-mode="audio">
+          <span>3B. Audio Convert &amp; Extract</span>
+          <span class="tab-sub">MP3, FLAC, Opus, WAV, M4A, Ogg, AC3</span>
+        </button>
+        <button type="button" class="mode-tab" data-mode="gif">
+          <span>3C. GIF, WebP &amp; Frame Tools</span>
+          <span class="tab-sub">2-Pass Palette GIF, Thumbnails, Sequences</span>
+        </button>
+        <button type="button" class="mode-tab" data-mode="encyclopedia">
+          <span>3D. Full Format &amp; Flag Encyclopedia</span>
+          <span class="tab-sub">Searchable Reference of All FFmpeg Flags</span>
+        </button>
+      </nav>
+
+      <!-- Quick Presets -->
+      <div class="preset-strip" id="preset-bar">
+        <span class="preset-label">ONE-TAP QUALITY PRESETS:</span>
+        <button type="button" class="preset-chip active" data-quick="reels60">Instagram / Shorts 60fps God-Tier</button>
+        <button type="button" class="preset-chip" data-quick="hevc_archive">4K HEVC Space-Saver (50% Smaller)</button>
+        <button type="button" class="preset-chip" data-quick="remux">Instant Remux MKV to MP4 (Zero Loss)</button>
+        <button type="button" class="preset-chip" data-quick="whatsapp">Ultra-Small Chat Share (Under 15MB)</button>
+        <button type="button" class="preset-chip" data-quick="prores">ProRes 422 Editing Master (.mov)</button>
+        <button type="button" class="preset-chip" data-quick="flac_audio">Extract Lossless FLAC Audio</button>
+      </div>
+
+      <!-- Live Quality, Sharpness, Size & Compatibility Stats (Step 3 Output Telemetry) -->
+      <div class="kpi-grid" aria-label="Output Quality and Sharpness Stats">
+        <div class="kpi-card">
+          <div class="kpi-label">Output Sharpness &amp; Fidelity</div>
+          <div class="kpi-value" id="kpi-qual-val">96 / 100</div>
+          <div class="meter-bar"><div class="meter-fill" id="kpi-qual-bar" style="width:96%; background:var(--emerald);"></div></div>
+          <div class="kpi-foot" id="kpi-qual-text">Visually lossless master retention</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Est. Output File Size</div>
+          <div class="kpi-value" id="kpi-size-val">24.8 MB</div>
+          <div class="meter-bar"><div class="meter-fill" id="kpi-size-bar" style="width:45%; background:var(--accent);"></div></div>
+          <div class="kpi-foot" id="kpi-size-text">UFS 4.0 write time: ~0.01 sec</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Player &amp; App Compatibility</div>
+          <div class="kpi-value" id="kpi-compat-val">Universal</div>
+          <div class="meter-bar"><div class="meter-fill" id="kpi-compat-bar" style="width:100%; background:var(--amber);"></div></div>
+          <div class="kpi-foot" id="kpi-compat-text">8-bit yuv420p safe decode</div>
+        </div>
+      </div>
+
+      <!-- Builder Panels -->
+      <div id="builder-workspace" class="studio-grid">
+        <!-- PANEL A: CONTAINER, CODEC, AUDIO MUTE & METADATA REMOVAL -->
+        <div class="panel">
+          <div class="panel-title">
+            <span>Container, Codec, Mute &amp; Metadata Wipe</span>
+            <span class="panel-tag">-c:v / -an / -map_metadata</span>
+          </div>
+
+          <div class="field-group" id="grp-v-container">
+            <div class="field-header">
+              <label class="field-label" for="sel-v-container">Output Container Format</label>
+              <span class="field-badge" id="bdg-v-container">.mp4</span>
+            </div>
+            <select id="sel-v-container">
+              <option value="mp4">.mp4 — MPEG-4 Part 14 (Universal Web, Android, Instagram, YouTube)</option>
+              <option value="mkv">.mkv — Matroska (Holds virtually ANY video/audio/subtitle codec)</option>
+              <option value="webm">.webm — WebM Open Media (Browsers, Discord, VP8/VP9/AV1 + Opus)</option>
+              <option value="mov">.mov — Apple QuickTime (ProRes, DNxHR, H.264/HEVC NLE Editing)</option>
+              <option value="avi">.avi — Legacy Audio Video Interleave (MPEG-4 / Xvid / MJPEG)</option>
+              <option value="ts">.ts — MPEG Transport Stream (Broadcast, IPTV, Concat-friendly)</option>
+              <option value="flv">.flv — Flash Video Container (RTMP Streaming &amp; Legacy H.264)</option>
+              <option value="ogv">.ogv — Ogg Video Container (Theora + Vorbis open format)</option>
+              <option value="3gp">.3gp — 3GPP Mobile Container (Ultra-low bandwidth mobile)</option>
+            </select>
+            <div class="explain-card" id="exp-v-container"></div>
+          </div>
+
+          <div class="field-group" id="grp-v-codec">
+            <div class="field-header">
+              <label class="field-label" for="sel-v-codec">Video Codec (-c:v)</label>
+              <span class="field-badge" id="bdg-v-codec">libx264</span>
+            </div>
+            <select id="sel-v-codec">
+              <option value="libx264">libx264 — H.264 / AVC (Best compatibility + fast hardware decode)</option>
+              <option value="libx265">libx265 — H.265 / HEVC (35-45% smaller file at same sharpness)</option>
+              <option value="libsvtav1">libsvtav1 — AV1 Open Codec (Next-gen royalty-free ultra compression)</option>
+              <option value="libvpx-vp9">libvpx-vp9 — Google VP9 (YouTube 4K &amp; WebM standard)</option>
+              <option value="libvpx">libvpx — VP8 (Fast legacy WebM video)</option>
+              <option value="prores_ks">prores_ks — Apple ProRes 422 (Zero-lag timeline editing master)</option>
+              <option value="mpeg4">mpeg4 — MPEG-4 Part 2 (Classic AVI/3GP hardware compatibility)</option>
+              <option value="mpeg2video">mpeg2video — MPEG-2 Broadcast / DVD stream</option>
+              <option value="libtheora">libtheora — Ogg Theora open video codec</option>
+              <option value="copy">copy — Stream Copy (No re-encoding! Instant UFS 4.0 container swap)</option>
+            </select>
+            <div class="explain-card" id="exp-v-codec"></div>
+          </div>
+
+          <div class="field-group" id="grp-v-mute">
+            <div class="field-header">
+              <label class="field-label" for="sel-v-mute">Video Audio Track (Enable / Disable Audio)</label>
+              <span class="field-badge" id="bdg-v-mute">Audio Enabled</span>
+            </div>
+            <select id="sel-v-mute">
+              <option value="keep" selected>Keep / Encode Audio Track (Configured in Audio Panel)</option>
+              <option value="disable">Disable Audio Completely (-an — Strip all sound &amp; mute video)</option>
+            </select>
+            <div class="explain-card" id="exp-v-mute"></div>
+          </div>
+
+          <div class="field-group" id="grp-global-meta">
+            <div class="field-header">
+              <label class="field-label" for="sel-global-meta">Universal Metadata Removal (Video, Audio &amp; Images)</label>
+              <span class="field-badge" id="bdg-global-meta">-map_metadata -1</span>
+            </div>
+            <select id="sel-global-meta">
+              <option value="strip_all" selected>Remove All Metadata (-map_metadata -1 — Strips EXIF, GPS, ID3 &amp; Camera Tags)</option>
+              <option value="strip_deep">Deep Privacy Wipe (-map_metadata -1 -map_chapters -1 -fflags +bitexact)</option>
+              <option value="keep">Keep Original File Metadata &amp; Tags</option>
+            </select>
+            <div class="explain-card" id="exp-global-meta"></div>
+          </div>
+
+          <div class="field-group hidden" id="grp-a-only-format">
+            <div class="field-header">
+              <label class="field-label" for="sel-a-only-format">Audio Output Format &amp; Codec</label>
+              <span class="field-badge" id="bdg-a-only">flac</span>
+            </div>
+            <select id="sel-a-only-format">
+              <option value="mp3">MP3 (.mp3 via libmp3lame) — Universal lossy audio</option>
+              <option value="flac">FLAC (.flac) — Bit-perfect compressed lossless audio</option>
+              <option value="opus">Opus (.opus via libopus) — Highest quality per kilobit at any bitrate</option>
+              <option value="m4a">AAC (.m4a via aac) — Apple / Android native streaming audio</option>
+              <option value="alac">ALAC (.m4a via alac) — Apple Lossless Audio Codec</option>
+              <option value="wav">WAV (.wav via pcm_s16le) — Uncompressed studio PCM wave</option>
+              <option value="wav24">WAV 24-Bit (.wav via pcm_s24le) — 24-Bit Hi-Res studio master</option>
+              <option value="ogg">Ogg Vorbis (.ogg via libvorbis) — Open source lossy audio</option>
+              <option value="ac3">Dolby AC-3 (.ac3) — Home theater surround / stereo stream</option>
+            </select>
+            <div class="explain-card" id="exp-a-only"></div>
+          </div>
+
+          <div class="field-group hidden" id="grp-gif-mode">
+            <div class="field-header">
+              <label class="field-label" for="sel-gif-type">Visual / Frame Output Type</label>
+              <span class="field-badge" id="bdg-gif-type">Palette GIF</span>
+            </div>
+            <select id="sel-gif-type">
+              <option value="gif_palette">2-Pass High-Quality Palette GIF (.gif with Lanczos + Palettegen)</option>
+              <option value="webp_anim">Animated WebP (.webp via libwebp — 16M colors, half the size of GIF)</option>
+              <option value="thumb_jpg">Single Best-Quality Frame Thumbnail (.jpg with -q:v 2)</option>
+              <option value="thumb_png">Lossless PNG Frame Snapshot (.png)</option>
+              <option value="seq_png">Full PNG Frame Sequence (frame_%04d.png)</option>
+            </select>
+            <div class="explain-card" id="exp-gif-type"></div>
+          </div>
+        </div>
+
+        <!-- PANEL B: QUALITY, BITRATE & ENCODER EFFORT -->
+        <div class="panel" id="panel-rate">
+          <div class="panel-title">
+            <span>Quality (CRF), Bitrate Cap &amp; Encoder Effort</span>
+            <span class="panel-tag">-crf / -b:v / -maxrate / -preset</span>
+          </div>
+
+          <div class="field-group" id="grp-rc-mode">
+            <div class="field-header">
+              <label class="field-label" for="sel-rc-mode">Rate Control Strategy</label>
+              <span class="field-badge" id="bdg-rc-mode">Constrained CRF</span>
+            </div>
+            <select id="sel-rc-mode">
+              <option value="crf_cap">Constrained CRF (-crf + -maxrate + -bufsize) — Best for Socials &amp; Streaming</option>
+              <option value="crf_only">Pure Quality Mode (-crf only) — Best for Local Storage &amp; Archives</option>
+              <option value="cbr">Target Average Bitrate (-b:v) — Predictable Exact File Size</option>
+              <option value="lossless">True Mathematical Lossless (-crf 0) — Huge File, Zero Loss</option>
+            </select>
+            <div class="explain-card" id="exp-rc-mode"></div>
+          </div>
+
+          <div class="field-group" id="grp-crf">
+            <div class="field-header">
+              <label class="field-label" for="rng-crf">Constant Rate Factor (-crf): Lower = Sharper</label>
+              <span class="field-badge" id="bdg-crf">CRF 18</span>
+            </div>
+            <input type="range" id="rng-crf" min="10" max="36" step="1" value="18">
+            <div class="explain-card" id="exp-crf-detail"></div>
+          </div>
+
+          <div class="field-group" id="grp-bitrate">
+            <div class="field-header">
+              <label class="field-label" for="rng-bitrate">Video Bitrate / Max Ceiling (Mbps)</label>
+              <span class="field-badge" id="bdg-bitrate">12 Mbps (24M buf)</span>
+            </div>
+            <input type="range" id="rng-bitrate" min="1" max="50" step="1" value="12">
+            <div class="explain-card" id="exp-bitrate-detail"></div>
+          </div>
+
+          <div class="field-group" id="grp-preset">
+            <div class="field-header">
+              <label class="field-label" for="rng-preset">Encoder CPU Effort (-preset)</label>
+              <span class="field-badge" id="bdg-preset">slower</span>
+            </div>
+            <input type="range" id="rng-preset" min="0" max="8" step="1" value="7">
+            <div class="explain-card" id="exp-preset-detail"></div>
+          </div>
+
+          <div class="field-group" id="grp-pixfmt">
+            <div class="field-header">
+              <label class="field-label" for="sel-pixfmt">Pixel Color Format (-pix_fmt) &amp; Tune</label>
+              <span class="field-badge" id="bdg-pixfmt">yuv420p</span>
+            </div>
+            <div class="two-col">
+              <select id="sel-pixfmt">
+                <option value="yuv420p">yuv420p — 8-bit 4:2:0 (100% Device Compatible)</option>
+                <option value="yuv420p10le">yuv420p10le — 10-bit HDR / Banding-Free Gradients</option>
+                <option value="yuv422p">yuv422p — 4:2:2 Professional Chroma Editing</option>
+                <option value="yuv444p">yuv444p — 4:4:4 Full Unsubsampled Color</option>
+              </select>
+              <select id="sel-tune">
+                <option value="none">No -tune (Default Balanced)</option>
+                <option value="film">-tune film (High-detail live action)</option>
+                <option value="animation">-tune animation (Flat cel shading &amp; anime)</option>
+                <option value="grain">-tune grain (Preserve heavy film grain)</option>
+                <option value="fastdecode">-tune fastdecode (Weak CPU playback)</option>
+              </select>
+            </div>
+            <div class="explain-card" id="exp-pixfmt-detail"></div>
+          </div>
+        </div>
+
+        <!-- PANEL C: RESOLUTION, FPS, SHARPNESS & TIMELINE -->
+        <div class="panel" id="panel-filters">
+          <div class="panel-title">
+            <span>Resolution, Frame Rate, Sharpness &amp; Trim</span>
+            <span class="panel-tag">-vf / -r / -ss / -to</span>
+          </div>
+
+          <div class="two-col">
+            <div class="field-group">
+              <div class="field-header">
+                <label class="field-label" for="sel-scale">Resolution Scaling (-vf scale)</label>
+              </div>
+              <select id="sel-scale">
+                <option value="original">Keep Original Resolution (1080p Base)</option>
+                <option value="1080_v">1080x1920 Vertical (9:16 Reels / Shorts)</option>
+                <option value="2160">3840x2160 (4K UHD Landscape — 4x Pixels)</option>
+                <option value="1440">2560x1440 (2K QHD — 1.77x Pixels)</option>
+                <option value="1080">1920x1080 (1080p Full HD)</option>
+                <option value="720">1280x720 (720p HD — 2.25x Faster Encode)</option>
+                <option value="480">854x480 (480p Compact — 5x Faster Encode)</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <div class="field-header">
+                <label class="field-label" for="sel-fps">Frame Rate (-r)</label>
+              </div>
+              <select id="sel-fps">
+                <option value="original">Keep Source FPS</option>
+                <option value="60" selected>60 FPS (Smooth Speed Ramps)</option>
+                <option value="30">30 FPS (Standard Web Video)</option>
+                <option value="24">24 FPS (Cinematic Motion)</option>
+                <option value="120">120 FPS (High-Refresh Slow-Mo)</option>
+                <option value="15">15 FPS (Lightweight GIF / Preview)</option>
+              </select>
+            </div>
+          </div>
+          <div class="explain-card" id="exp-scale-fps"></div>
+
+          <div class="two-col">
+            <div class="field-group">
+              <div class="field-header"><label class="field-label" for="in-ss">Start Timestamp (-ss)</label></div>
+              <input type="text" id="in-ss" value="" placeholder="e.g. 00:00:05 (Blank = start)">
+            </div>
+            <div class="field-group">
+              <div class="field-header"><label class="field-label" for="in-to">Stop Timestamp (-to)</label></div>
+              <input type="text" id="in-to" value="" placeholder="e.g. 00:00:35 (Blank = full)">
+            </div>
+          </div>
+
+          <div class="two-col">
+            <div class="field-group">
+              <div class="field-header"><label class="field-label" for="sel-speed">Playback Speed / Optical Flow</label></div>
+              <select id="sel-speed">
+                <option value="1x">1.0x Normal Speed</option>
+                <option value="2x">2.0x Fast Forward (setpts=0.5*PTS + atempo=2.0)</option>
+                <option value="0.5x">0.5x Slow Motion (setpts=2.0*PTS + atempo=0.5)</option>
+                <option value="optflow_60">Optical Flow 60fps Interpolation (minterpolate)</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <div class="field-header"><label class="field-label" for="sel-extra-vf">Sharpness &amp; Stabilization Filter</label></div>
+              <select id="sel-extra-vf">
+                <option value="none">None</option>
+                <option value="unsharp">Detail Sharpening Filter (unsharp=5:5:0.8)</option>
+                <option value="pad_9_16">Letterbox Pad Landscape into 9:16 Vertical</option>
+                <option value="stabilize">Deshake Camera Stabilization (deshake)</option>
+                <option value="strip_meta">Force Metadata Wipe (-map_metadata -1)</option>
+              </select>
+            </div>
+          </div>
+          <div class="explain-card" id="exp-filters"></div>
+        </div>
+
+        <!-- PANEL D: AUDIO STREAM SETTINGS -->
+        <div class="panel" id="panel-audio">
+          <div class="panel-title">
+            <span>Audio Codec, Bitrate &amp; Loudness</span>
+            <span class="panel-tag">-c:a / -b:a / -ar / -af</span>
+          </div>
+
+          <div class="field-group" id="grp-v-acodec">
+            <div class="field-header">
+              <label class="field-label" for="sel-v-acodec">Audio Track Mode (-c:a)</label>
+              <span class="field-badge" id="bdg-v-acodec">aac</span>
+            </div>
+            <select id="sel-v-acodec">
+              <option value="aac">aac — Advanced Audio Coding (Standard for MP4/MOV/MKV)</option>
+              <option value="libopus">libopus — Opus (Superior clarity at 128k-192k for WebM/MKV/MP4)</option>
+              <option value="libmp3lame">libmp3lame — MP3 Audio stream</option>
+              <option value="flac">flac — Lossless Audio inside MKV/MP4</option>
+              <option value="pcm_s16le">pcm_s16le — Uncompressed PCM Wave (MOV/AVI/MKV)</option>
+              <option value="copy">copy — Direct Audio Copy (Zero audio re-encoding)</option>
+              <option value="none">-an — Strip Audio Completely (Mute video track)</option>
+            </select>
+          </div>
+
+          <div class="field-group" id="grp-a-bitrate">
+            <div class="field-header">
+              <label class="field-label" for="rng-a-bitrate">Audio Bitrate (-b:a)</label>
+              <span class="field-badge" id="bdg-a-bitrate">192 kbps</span>
+            </div>
+            <input type="range" id="rng-a-bitrate" min="64" max="320" step="32" value="192">
+            <div class="explain-card" id="exp-a-bitrate"></div>
+          </div>
+
+          <div class="two-col">
+            <div class="field-group">
+              <div class="field-header"><label class="field-label" for="sel-ar">Sample Rate (-ar)</label></div>
+              <select id="sel-ar">
+                <option value="original">Keep Source Hz</option>
+                <option value="48000" selected>48000 Hz (Video Standard)</option>
+                <option value="44100">44100 Hz (CD Music Standard)</option>
+                <option value="96000">96000 Hz (Hi-Res Studio)</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <div class="field-header"><label class="field-label" for="sel-af">Audio Filter (-af)</label></div>
+              <select id="sel-af">
+                <option value="none">No Audio Filter</option>
+                <option value="loudnorm">EBU R128 Loudness Normalize (loudnorm)</option>
+                <option value="vol_up">Boost Volume +4dB (volume=4dB)</option>
+                <option value="bass">Phonk / Bass Punch (bass=g=5:f=90)</option>
+              </select>
+            </div>
+          </div>
+          <div class="explain-card" id="exp-audio-extra"></div>
+        </div>
+      </div>
+
+      <!-- MODE 4: ENCYCLOPEDIA REFERENCE -->
+      <div id="encyclopedia-workspace" class="panel hidden">
+        <div class="panel-title">
+          <span>Complete Offline FFmpeg Format, Codec &amp; Parameter Encyclopedia</span>
+          <span class="panel-tag">Instant Filter</span>
+        </div>
+        <div class="encyc-search">
+          <input type="text" id="in-encyc-search" placeholder="Search any flag, codec, or concept (e.g. crf, maxrate, bufsize, yuv420p, opus, prores, faststart)...">
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Flag / Codec</th>
+                <th>Category</th>
+                <th>What It Means</th>
+                <th>What Changing It Affects (Quality vs Size vs Speed)</th>
+              </tr>
+            </thead>
+            <tbody id="encyc-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="wizard-footer">
+        <button type="button" class="btn btn-prev" data-step-go="2">← Back: File Details</button>
+        <button type="button" class="btn btn-next" data-step-go="4">Next: POCO X7 Pro Speed &amp; Time →</button>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- STEP 4: POCO X7 PRO PERFORMANCE & CONVERSION TIME ESTIMATOR         -->
+    <!-- =================================================================== -->
+    <section id="step-4-sec" class="step-block step-4" aria-label="Step 4: POCO X7 Pro Performance and Conversion Time">
+      <div class="step-banner">
+        <div class="step-banner-left">
+          <span class="step-tag t4">Step 4 of 5</span>
+          <h2 class="step-heading">POCO X7 Pro 5G Performance &amp; Conversion Time Estimator</h2>
+          <span class="poco-chip">Dimensity 8400-Ultra · 3.5 GHz Boost</span>
+          <span class="poco-chip">LPDDR5X · UFS 4.0</span>
+        </div>
+        <span style="font-size:12px; color:var(--text-muted);" id="poco-summary-tag">8x Arm Cortex-A725 Active</span>
+      </div>
+
+      <div class="poco-specs-bar">
+        <div class="spec-pill">
+          <span class="spec-pill-label">CPU Cluster Architecture</span>
+          <span class="spec-pill-val" id="spec-cpu-str">8x Cortex-A725 (3.50 GHz Boost)</span>
+        </div>
+        <div class="spec-pill">
+          <span class="spec-pill-label">RAM &amp; Memory Bandwidth</span>
+          <span class="spec-pill-val">LPDDR5X · 68.2 GB/s</span>
+        </div>
+        <div class="spec-pill">
+          <span class="spec-pill-label">Flash Storage I/O</span>
+          <span class="spec-pill-val">UFS 4.0 (~4,000 MB/s)</span>
+        </div>
+        <div class="spec-pill">
+          <span class="spec-pill-label">Cooling &amp; Battery</span>
+          <span class="spec-pill-val">5000mm² VC · 6550 mAh</span>
+        </div>
+      </div>
+
+      <div class="poco-controls-grid">
+        <div class="field-group">
+          <div class="field-header">
+            <label class="field-label" for="rng-vid-dur">Source Video Length (Auto-synced from Step 2)</label>
+            <span class="field-badge" id="bdg-vid-dur">30 sec (0m 30s)</span>
+          </div>
+          <input type="range" id="rng-vid-dur" min="5" max="900" step="5" value="30">
+          <div class="dur-pills">
+            <button type="button" class="dur-btn" data-dur="15">15s Reel</button>
+            <button type="button" class="dur-btn active" data-dur="30">30s Edit</button>
+            <button type="button" class="dur-btn" data-dur="60">1m Short</button>
+            <button type="button" class="dur-btn" data-dur="180">3m Video</button>
+            <button type="button" class="dur-btn" data-dur="600">10m Vlog</button>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <div class="field-header">
+            <label class="field-label" for="sel-clock-mode">Clock Speed &amp; Thermal Mode</label>
+          </div>
+          <select id="sel-clock-mode">
+            <option value="boost35" selected>3.50 GHz Peak Boost Mode (Your 3.5 GHz Spec + Game Turbo / Cool VC)</option>
+            <option value="stock325">3.25 GHz Stock Prime Core (1x3.25 + 3x3.0 + 4x2.1 GHz Official Spec)</option>
+            <option value="sustained">Sustained Thermal Load (After 10+ mins continuous encoding ~2.85 GHz)</option>
+          </select>
+        </div>
+
+        <div class="field-group">
+          <div class="field-header">
+            <label class="field-label" for="sel-threads">CPU Core Threads (-threads)</label>
+          </div>
+          <select id="sel-threads">
+            <option value="0" selected>Auto — All 8 Cortex-A725 Cores (Fastest)</option>
+            <option value="6">6 Threads (-threads 6 — Leaves 2 cores for UI)</option>
+            <option value="4">4 Threads (-threads 4 — Cooler battery temperature)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- POCO X7 Pro Speed, Time & Battery KPIs -->
+      <div class="kpi-grid" id="telemetry-strip">
+        <div class="kpi-card">
+          <div class="kpi-label">Est. POCO X7 Pro Conversion Time</div>
+          <div class="kpi-value" id="kpi-time-val" style="color:var(--emerald);">~38.0 sec</div>
+          <div class="meter-bar"><div class="meter-fill" id="kpi-time-bar" style="width:65%; background:var(--emerald);"></div></div>
+          <div class="kpi-foot" id="kpi-time-text">~47 fps on 8x Cortex-A725</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Encoding Throughput &amp; Load</div>
+          <div class="kpi-value" id="kpi-speed-val">0.79x RT</div>
+          <div class="meter-bar"><div class="meter-fill" id="kpi-speed-bar" style="width:45%; background:var(--amber);"></div></div>
+          <div class="kpi-foot" id="kpi-speed-text">Preset: slower</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">LPDDR5X RAM &amp; Battery Drain</div>
+          <div class="kpi-value" id="kpi-batt-val">~0.3% Batt</div>
+          <div class="meter-bar"><div class="meter-fill" id="kpi-batt-bar" style="width:18%; background:var(--violet);"></div></div>
+          <div class="kpi-foot" id="kpi-batt-text">~460 MB LPDDR5X · 6550 mAh</div>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>FFmpeg Preset / Mode</th>
+              <th>POCO X7 Pro Speed (FPS)</th>
+              <th>Est. Time for Your Video</th>
+              <th>Est. Output Size</th>
+              <th>Hardware Bottleneck &amp; Thermal Behavior</th>
+            </tr>
+          </thead>
+          <tbody id="poco-bench-tbody"></tbody>
+        </table>
+      </div>
+      <div class="wizard-footer">
+        <button type="button" class="btn btn-prev" data-step-go="3">← Back: Format &amp; Sharpness</button>
+        <button type="button" class="btn btn-next" data-step-go="5">Next: Get Final Command →</button>
+      </div>
+    </section>
+
+    <!-- =================================================================== -->
+    <!-- STEP 5: READY-TO-RUN COMMAND, COPY & FLAG-BY-FLAG INSPECTOR         -->
+    <!-- =================================================================== -->
+    <section id="step-5-sec" class="step-block step-5" aria-label="Step 5: Final Generated FFmpeg Command">
+      <div class="step-banner">
+        <div class="step-banner-left">
+          <span class="step-tag t5">Step 5 of 5</span>
+          <h2 class="step-heading">Final Path-Aware Command &amp; Interactive Flag Breakdown</h2>
+          <span id="compat-badge" class="status-pill">Valid Container + Codec Match</span>
+        </div>
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button type="button" id="btn-batch-toggle" class="btn">Single File Mode</button>
+          <button type="button" id="btn-select-cmd" class="btn">Highlight Text</button>
+          <button type="button" id="btn-export-sh" class="btn">Download .sh Script</button>
+          <button type="button" id="btn-copy-cmd" class="btn btn-emerald">Copy Command</button>
+        </div>
+      </div>
+
+      <textarea id="cmd-output" class="cmd-box" rows="3" readonly aria-label="FFmpeg Command Text">ffmpeg -i "input.mp4" -c:v libx264 -preset slower -crf 18 -maxrate 12M -bufsize 24M -r 60 -pix_fmt yuv420p -map_metadata -1 -movflags +faststart -c:a aac -b:a 192k "output.mp4"</textarea>
+
+      <div style="font-size:12px; color:var(--text-muted); margin-bottom:4px;">Tap any flag chip below to read what that exact part of your command does:</div>
+      <div class="token-row" id="token-strip"></div>
+      <div class="token-inspector" id="token-explain">Tap any flag chip above to read a breakdown of how that exact argument works.</div>
+      <div class="wizard-footer">
+        <button type="button" class="btn btn-prev" data-step-go="4">← Back: POCO X7 Pro Estimator</button>
+        <button type="button" class="btn btn-primary" data-step-go="1">↺ Start New File / Folder</button>
+      </div>
+    </section>
+  </div>
+
+  <div id="toast" class="toast">Command copied to clipboard!</div>
+
+  <script>
+    const presetNames = ['ultrafast', 'superfast', 'veryfast', 'faster', 'fast', 'medium', 'slow', 'slower', 'veryslow'];
+    // Baseline 1080p60 libx264 FPS on POCO X7 Pro Dimensity 8400-Ultra (8x Cortex-A725 @ 3.50 GHz boost)
+    const pocoBaseFpsH264 = [310, 245, 190, 150, 122, 92, 62, 44, 26];
+
+    const containerInfo = {
+      mp4: {
+        desc: 'MPEG-4 Part 14 (.mp4) is the most universally supported container on Android, iOS, browsers, Instagram, and YouTube.',
+        effect: 'Supports H.264, HEVC, AV1, and VP9 video plus AAC, MP3, Opus, or FLAC audio. Automatically enables -movflags +faststart so web/social players start playing immediately.'
+      },
+      mkv: {
+        desc: 'Matroska (.mkv) is an open-source universal container that accepts virtually any video, audio, or subtitle stream without restrictions.',
+        effect: 'Ideal for local storage, MPV playback, and archiving FLAC/Opus audio with HEVC or AV1 video. Some social apps require .mp4 for direct uploads.'
+      },
+      webm: {
+        desc: 'WebM (.webm) is Google’s royalty-free web container built specifically for HTML5 browsers, Discord, and lightweight streaming.',
+        effect: 'Strictly accepts ONLY VP8, VP9, or AV1 video and Vorbis or Opus audio. Selecting H.264 in WebM is auto-corrected to VP9 so your command never errors.'
+      },
+      mov: {
+        desc: 'Apple QuickTime (.mov) is the industry standard for video editing timelines (DaVinci Resolve, Premiere, Alight Motion/Node workflows).',
+        effect: 'Required when encoding Apple ProRes (prores_ks) or uncompressed PCM audio alongside H.264/HEVC.'
+      },
+      avi: {
+        desc: 'Audio Video Interleave (.avi) is a legacy 1992 Microsoft container designed for older hardware DVD/car players.',
+        effect: 'Lacks modern features like variable framerate or B-frame timestamps; pairs best with mpeg4 (Xvid-style) video and MP3/PCM audio.'
+      },
+      ts: {
+        desc: 'MPEG Transport Stream (.ts) packets media into resilient 188-byte chunks that survive stream interruptions and allow lossless file concatenation.',
+        effect: 'Great for broadcast streams or joining multiple clips via concat protocol without re-encoding.'
+      },
+      flv: {
+        desc: 'Flash Video (.flv) is used for RTMP live streaming ingests (YouTube Live, Twitch) with H.264 and AAC.',
+        effect: 'Restricts audio sample rates and modern codecs; use .mp4 or .mkv for local files.'
+      },
+      ogv: {
+        desc: 'Ogg Video (.ogv) is Xiph.Org’s free software container pairing Theora video with Vorbis/Opus audio.',
+        effect: 'Used for open-source game engines and legacy Linux web playback.'
+      },
+      '3gp': {
+        desc: '3GPP (.3gp) is a lightweight mobile container originally built for 3G feature phones and MMS.',
+        effect: 'Uses MPEG-4 or H.264 with low-bitrate AAC audio for tiny file footprints.'
+      }
+    };
+
+    const codecInfo = {
+      libx264: {
+        desc: 'H.264 / AVC software encoder. The gold standard for compatibility across every phone, browser, TV, and social platform.',
+        effect: 'Decodes effortlessly in hardware on any chip. Needs ~30-40% higher bitrate than HEVC/AV1 to match ultra-low-bitrate sharpness.'
+      },
+      libx265: {
+        desc: 'H.265 / HEVC encoder. Uses larger 64x64 coding tree units and advanced motion prediction.',
+        effect: 'Shrinks file size by 35-45% compared to H.264 at the same visual sharpness, but takes ~1.9x more CPU time on Cortex-A725 cores. Adds -tag:v hvc1 on MP4/MOV.'
+      },
+      libsvtav1: {
+        desc: 'Scalable Video Technology for AV1 (SVT-AV1). Royalty-free next-generation video codec.',
+        effect: 'Delivers ~25% better compression than HEVC and ~50% better than H.264. Supported in hardware decode on the POCO X7 Pro Dimensity 8400-Ultra.'
+      },
+      'libvpx-vp9': {
+        desc: 'Google VP9 open-source encoder used by YouTube for 1440p/4K streams and WebM files.',
+        effect: 'Requires -b:v 0 when running pure CRF mode, or explicit -b:v alongside -crf for constrained quality (handled automatically by this studio).'
+      },
+      libvpx: {
+        desc: 'Google VP8 encoder for legacy WebM compatibility.',
+        effect: 'Encodes faster than VP9 but has noticeably lower compression efficiency.'
+      },
+      prores_ks: {
+        desc: 'Apple ProRes 422 Intra-frame editing codec (-profile:v 2). Every single frame is stored independently.',
+        effect: 'Eliminates timeline lag and scrubbing stutter in video editors, at the cost of very large file sizes (~120-200 Mbps).'
+      },
+      mpeg4: {
+        desc: 'MPEG-4 Part 2 visual encoder (compatible with DivX/Xvid players).',
+        effect: 'Encodes extremely fast on ARM CPUs; uses -q:v (1-31) quality scale when CRF is not applicable.'
+      },
+      mpeg2video: {
+        desc: 'Classic MPEG-2 video codec used in DVDs and digital TV transport streams.',
+        effect: 'Fast encode and decode, but requires high bitrates (8-15 Mbps) to avoid blockiness.'
+      },
+      libtheora: {
+        desc: 'Xiph Theora open video codec for .ogv and .mkv containers.',
+        effect: 'Uses -q:v (0-10, higher = better) quality control.'
+      },
+      copy: {
+        desc: 'Direct Bitstream Copy (-c:v copy). Copies raw encoded video packets from input to output without decoding or re-encoding.',
+        effect: 'Runs at UFS 4.0 flash speed (~4,000 MB/s read / ~2,800 MB/s write) with ZERO quality loss and <0.2s completion time.'
+      }
+    };
+
+    const encyclopediaEntries = [
+      { flag: '-crf [0-51]', cat: 'Quality / Rate Control', mean: 'Constant Rate Factor targets a consistent perceived visual quality across the whole video.', effect: 'Lower number = higher quality & larger file. 0 is lossless, 18 is visually lossless for H.264, 23 is default, 28+ shows visible compression blocks. Every -6 roughly doubles file size.' },
+      { flag: '-maxrate [rate]', cat: 'Bitrate Ceiling', mean: 'Sets the maximum allowed bitrate spike entering the decoder buffer (e.g. -maxrate 12M).', effect: 'Prevents high-motion speed ramps or confetti from spiking to 40+ Mbps and triggering harsh re-encoding on Instagram/YouTube. Must be paired with -bufsize.' },
+      { flag: '-bufsize [size]', cat: 'Rate Control Buffer', mean: 'Defines the Video Buffering Verifier (VBV) bucket size that averages out bitrate spikes.', effect: 'Setting -bufsize to 2x your -maxrate (e.g. 24M for 12M maxrate) gives the encoder breathing room for 2-second action bursts without dropping frame sharpness.' },
+      { flag: '-b:v [rate]', cat: 'Average Bitrate', mean: 'Targets a specific average video data rate in bits per second (e.g. -b:v 8M).', effect: 'Gives predictable final file size (Mbps * seconds / 8 = Megabytes), but wastes bits on still scenes and starves complex scenes compared to -crf.' },
+      { flag: '-preset [name]', cat: 'Encoder Efficiency', mean: 'Controls how much CPU effort libx264/libx265 spends on motion estimation and lookahead (ultrafast to veryslow).', effect: 'Slower presets produce a smaller file at the exact same CRF quality (or sharper detail under a bitrate cap), but take longer on your 8 Cortex-A725 cores.' },
+      { flag: '-threads [N]', cat: 'CPU Core Allocation', mean: 'Controls how many CPU threads FFmpeg spawns across the Dimensity 8400-Ultra octa-core cluster.', effect: '0 (Auto) uses all 8 Cortex-A725 cores (1x 3.25/3.50GHz + 3x 3.0GHz + 4x 2.1GHz) for maximum speed; setting 4 or 6 keeps phone thermals cooler.' },
+      { flag: '-pix_fmt yuv420p', cat: 'Color Subsampling', mean: 'Stores full luma (brightness) resolution with 4:2:0 chroma (color) subsampling at 8 bits per channel.', effect: 'Mandatory for universal hardware decoding. Without it, 10-bit or 4:4:4 sources often play as a black or green screen on phones and browsers.' },
+      { flag: '-movflags +faststart', cat: 'MP4 / MOV Web Optimization', mean: 'Moves the MP4 moov atom (index table) from the end of the file to the very beginning.', effect: 'Allows browsers, Instagram, and streaming apps to begin playback instantly before the entire file finishes downloading. Zero impact on quality.' },
+      { flag: '-c:v copy -c:a copy', cat: 'Lossless Stream Remux', mean: 'Copies compressed video and audio packets directly into a new container (e.g. MKV to MP4) without re-encoding.', effect: 'Runs at UFS 4.0 storage I/O speed (thousands of fps) with 100% original quality retained.' },
+      { flag: '-vf scale=W:H', cat: 'Resolution Filter', mean: 'Resizes video frames to Width x Height (use -2 for one dimension to preserve aspect ratio cleanly on even pixels).', effect: 'Downscaling from 4K to 1080p cuts pixel count by 4x, speeding up POCO X7 Pro encoding by ~3.6x.' },
+      { flag: 'palettegen + paletteuse', cat: '2-Pass GIF Filter', mean: 'Generates a custom 256-color palette tailored to your clip before rendering the GIF.', effect: 'Eliminates the grainy, banded color dots produced by standard one-line FFmpeg GIF conversions.' },
+      { flag: '-af loudnorm', cat: 'Audio Normalization', mean: 'Applies EBU R128 broadcast loudness normalization.', effect: 'Brings quiet dialogue or uneven music tracks up to a balanced, consistent listening volume without harsh digital clipping.' },
+      { flag: '-map_metadata -1', cat: 'Privacy & Clean Headers', mean: 'Strips all global container metadata, GPS coordinates, and device tags from the output file.', effect: 'Protects privacy and removes broken proprietary camera tags before uploading.' }
+    ];
+
+    let currentMode = 'video';
+    let batchMode = false;
+
+    const elContainer = document.getElementById('sel-v-container');
+    const elVCodec = document.getElementById('sel-v-codec');
+    const elAOnly = document.getElementById('sel-a-only-format');
+    const elGifType = document.getElementById('sel-gif-type');
+    const elRcMode = document.getElementById('sel-rc-mode');
+    const elCrf = document.getElementById('rng-crf');
+    const elBitrate = document.getElementById('rng-bitrate');
+    const elPreset = document.getElementById('rng-preset');
+    const elPixfmt = document.getElementById('sel-pixfmt');
+    const elTune = document.getElementById('sel-tune');
+    const elScale = document.getElementById('sel-scale');
+    const elFps = document.getElementById('sel-fps');
+    const elSs = document.getElementById('in-ss');
+    const elTo = document.getElementById('in-to');
+    const elSpeed = document.getElementById('sel-speed');
+    const elExtraVf = document.getElementById('sel-extra-vf');
+    const elVACodec = document.getElementById('sel-v-acodec');
+    const elABitrate = document.getElementById('rng-a-bitrate');
+    const elAr = document.getElementById('sel-ar');
+    const elAf = document.getElementById('sel-af');
+    const elInFile = document.getElementById('in-filename');
+    const elOutBase = document.getElementById('out-basename');
+    const elVidDur = document.getElementById('rng-vid-dur');
+    const elClockMode = document.getElementById('sel-clock-mode');
+    const elThreads = document.getElementById('sel-threads');
+    const elCmdBox = document.getElementById('cmd-output');
+    const elVMute = document.getElementById('sel-v-mute');
+    const elGlobalMeta = document.getElementById('sel-global-meta');
+    const elBtnOpenFile = document.getElementById('btn-open-file');
+    const elBtnOpenFolder = document.getElementById('btn-open-folder');
+    const elInpNativeFile = document.getElementById('inp-native-file');
+    const elInpNativeFolder = document.getElementById('inp-native-folder');
+    const elInCustomDir = document.getElementById('in-custom-dir');
+    let sourceBitrateMbps = 10.5;
+    let sourceFileSizeMB = 39.4;
+    let detectedFolderExt = 'mp4';
+    let detectedFolderName = '';
+
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.classList.add('show');
+      setTimeout(() => t.classList.remove('show'), 2200);
+    }
+
+    function formatTimeSec(sec) {
+      if (sec < 1) return (sec * 1000).toFixed(0) + ' ms (<1s)';
+      if (sec < 60) return '~' + sec.toFixed(1) + ' sec';
+      const m = Math.floor(sec / 60);
+      const s = Math.round(sec % 60);
+      if (m < 60) return '~' + m + 'm ' + s + 's';
+      const h = Math.floor(m / 60);
+      const rm = m % 60;
+      return '~' + h + 'h ' + rm + 'm';
+    }
+
+    function formatDurLabel(sec) {
+      const m = Math.floor(sec / 60);
+      const s = sec % 60;
+      return sec + ' sec (' + m + 'm ' + s + 's)';
+    }
+
+    // Stacked Wizard Step Controller (shows 1 step at a time with Previous / Next buttons)
+    let activeStep = 1;
+    const stepMeta = [
+      { id: 'step-1-sec', title: 'Step 1 of 5 · File / Folder Selection', nextLabel: 'Next: File Details →' },
+      { id: 'step-2-sec', title: 'Step 2 of 5 · Source File Details', nextLabel: 'Next: Format & Sharpness →' },
+      { id: 'step-3-sec', title: 'Step 3 of 5 · Format, Quality & Sharpness', nextLabel: 'Next: POCO X7 Pro Time →' },
+      { id: 'step-4-sec', title: 'Step 4 of 5 · POCO X7 Pro Speed & Time', nextLabel: 'Next: Final Command →' },
+      { id: 'step-5-sec', title: 'Step 5 of 5 · Ready Command & Copy', nextLabel: 'Done ✓' }
+    ];
+
+    function showWizardStep(stepNum) {
+      activeStep = Math.max(1, Math.min(5, stepNum));
+      stepMeta.forEach((m, idx) => {
+        const sec = document.getElementById(m.id);
+        if (sec) sec.classList.toggle('wizard-hidden', (idx + 1) !== activeStep);
+      });
+
+      const navBtns = document.querySelectorAll('[data-goto]');
+      navBtns.forEach((b, idx) => {
+        b.classList.toggle('active', (idx + 1) === activeStep);
+        b.classList.toggle('completed', (idx + 1) < activeStep);
+      });
+
+      const topPrev = document.getElementById('btn-top-prev');
+      const topNext = document.getElementById('btn-top-next');
+      const topLbl = document.getElementById('wizard-progress-label');
+
+      topLbl.textContent = stepMeta[activeStep - 1].title;
+      topPrev.disabled = (activeStep === 1);
+      topNext.disabled = (activeStep === 5);
+      topNext.textContent = stepMeta[activeStep - 1].nextLabel;
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    document.querySelectorAll('[data-goto]').forEach((btn, idx) => {
+      btn.addEventListener('click', () => showWizardStep(idx + 1));
+    });
+
+    document.querySelectorAll('[data-step-go]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const target = parseInt(btn.getAttribute('data-step-go'), 10);
+        if (!isNaN(target)) showWizardStep(target);
+      });
+    });
+
+    document.getElementById('btn-top-prev').addEventListener('click', () => showWizardStep(activeStep - 1));
+    document.getElementById('btn-top-next').addEventListener('click', () => showWizardStep(activeStep + 1));
+
+    // Bulletproof multi-stage synchronous + async clipboard copy for Android WebView, Chrome file://, and iframes
+    function copyCommandBulletproof() {
+      const text = elCmdBox.value || elCmdBox.textContent || '';
+      let copiedSync = false;
+
+      // Stage 1: Temporary off-screen textarea synchronous execCommand('copy') inside user tap gesture
+      try {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.setAttribute('readonly', '');
+        ta.style.position = 'fixed';
+        ta.style.top = '0';
+        ta.style.left = '0';
+        ta.style.width = '2em';
+        ta.style.height = '2em';
+        ta.style.padding = '0';
+        ta.style.border = 'none';
+        ta.style.outline = 'none';
+        ta.style.boxShadow = 'none';
+        ta.style.background = 'transparent';
+        ta.style.opacity = '0.01';
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        ta.setSelectionRange(0, text.length);
+        copiedSync = document.execCommand('copy');
+        document.body.removeChild(ta);
+      } catch (e) {}
+
+      // Stage 2: Direct selection on visible #cmd-output textarea + synchronous execCommand('copy')
+      try {
+        elCmdBox.focus();
+        elCmdBox.select();
+        elCmdBox.setSelectionRange(0, text.length);
+        if (!copiedSync) {
+          copiedSync = document.execCommand('copy');
+        }
+      } catch (e) {}
+
+      // Stage 3: Modern Async Clipboard API (when available in HTTPS/localhost)
+      if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+        try {
+          navigator.clipboard.writeText(text).catch(function() {});
+        } catch (e) {}
+      }
+
+      if (window.AndroidBridge && typeof window.AndroidBridge.copyToClipboard === 'function') {
+        try { window.AndroidBridge.copyToClipboard(text); } catch (e) {}
+      }
+      const btn = document.getElementById('btn-copy-cmd');
+      btn.textContent = 'Copied & Highlighted!';
+      setTimeout(() => { btn.textContent = 'Copy Command'; }, 1800);
+      showToast('Command copied & selected in box!');
+    }
+
+    function enforceContainerCompatibility() {
+      const c = elContainer.value;
+      const v = elVCodec.value;
+      const a = elVACodec.value;
+      let note = 'Valid Container + Codec Match';
+      let isWarn = false;
+
+      if (c === 'webm') {
+        if (!['libvpx-vp9', 'libvpx', 'libsvtav1', 'copy'].includes(v)) {
+          elVCodec.value = 'libvpx-vp9';
+          note = 'Auto-switched to VP9 (WebM only supports VP8/VP9/AV1)';
+          isWarn = true;
+        }
+        if (!['libopus', 'copy', 'none'].includes(a)) {
+          elVACodec.value = 'libopus';
+          note = 'Auto-selected Opus audio for WebM compatibility';
+          isWarn = true;
+        }
+      } else if (c === 'ogv') {
+        if (!['libtheora', 'copy'].includes(v)) {
+          elVCodec.value = 'libtheora';
+          note = 'Auto-switched to Theora for .ogv container';
+          isWarn = true;
+        }
+      } else if (c === 'avi' && ['libsvtav1', 'libvpx-vp9', 'prores_ks'].includes(v)) {
+        elVCodec.value = 'mpeg4';
+        note = 'Auto-switched to mpeg4 for legacy .avi compatibility';
+        isWarn = true;
+      } else if (v === 'prores_ks' && !['mov', 'mkv'].includes(c)) {
+        elContainer.value = 'mov';
+        note = 'Auto-switched container to .mov for Apple ProRes';
+        isWarn = true;
+      }
+
+      const badge = document.getElementById('compat-badge');
+      badge.textContent = note;
+      badge.className = isWarn ? 'status-pill warn' : 'status-pill';
+    }
+
+    function buildTokensAndExplain(cmdStr) {
+      const strip = document.getElementById('token-strip');
+      const inspector = document.getElementById('token-explain');
+      strip.innerHTML = '';
+
+      const flagMap = [
+        { match: 'cd "', title: 'Directory Navigation (cd)', text: 'Moves Termux into your chosen Android/Linux storage folder before running FFmpeg so you do not have to type long file paths.' },
+        { match: '-c:v', title: 'Video Codec (-c:v)', text: 'Selects the video encoder library (such as libx264, libx265, libvpx-vp9, or copy for lossless stream remuxing).' },
+        { match: '-crf', title: 'Constant Rate Factor (-crf)', text: 'Adjusts bit allocation per frame to maintain constant visual quality. Lower values preserve more fine texture and gradients.' },
+        { match: '-maxrate', title: 'Maximum Bitrate Ceiling (-maxrate)', text: 'Clamps peak bitrate spikes during intense motion so file size stays reasonable and social platforms do not crush your upload.' },
+        { match: '-bufsize', title: 'VBV Decoder Buffer (-bufsize)', text: 'Sets the buffer window over which -maxrate is enforced (typically 2x maxrate for smooth 60fps transitions).' },
+        { match: '-preset', title: 'Encoder Motion Search Effort (-preset)', text: 'Controls CPU time spent compressing frames across your 8 Cortex-A725 cores. Slower presets achieve higher sharpness per megabyte.' },
+        { match: '-threads', title: 'CPU Core Thread Count (-threads)', text: 'Limits how many Cortex-A725 threads FFmpeg uses on your POCO X7 Pro so you can balance peak speed vs phone temperature.' },
+        { match: '-pix_fmt', title: 'Pixel Color Format (-pix_fmt)', text: 'Defines chroma subsampling and bit depth. yuv420p guarantees playback on every phone, browser, and app.' },
+        { match: '-movflags', title: 'Faststart Web Header (-movflags +faststart)', text: 'Relocates the MP4 index header to the front of the file for instant streaming startup.' },
+        { match: '-vf', title: 'Video Filtergraph (-vf)', text: 'Applies frame transformations such as resolution scaling, 9:16 padding, optical flow interpolation, or palette generation.' },
+        { match: '-c:a', title: 'Audio Codec (-c:a)', text: 'Selects the audio encoder (aac, libopus, flac, libmp3lame, or copy).' },
+        { match: '-b:a', title: 'Audio Bitrate (-b:a)', text: 'Sets the audio stream data rate in kilobits per second (192k AAC/Opus is transparent on virtually all headphones).' },
+        { match: '-vn', title: 'No Video (-vn)', text: 'Drops the video stream completely so FFmpeg extracts a pure audio file.' },
+        { match: '-an', title: 'Disable Audio (-an)', text: 'Strips all audio tracks from the output video file, saving ~0.5–1.5 MB per minute and skipping audio encoding.' },
+        { match: '-map_metadata', title: 'Metadata Removal (-map_metadata -1)', text: 'Wipes all global and stream metadata (GPS coordinates, camera model, ID3/Vorbis tags, and timestamps) across video, audio, and image outputs.' },
+        { match: '-map_chapters', title: 'Chapter Marker Removal (-map_chapters -1)', text: 'Removes embedded chapter markers and timeline titles from containers.' },
+        { match: '-fflags', title: 'Bitexact Header Mode (-fflags +bitexact)', text: 'Prevents FFmpeg from writing its own Lavf/Lavc encoder version software strings into the file header.' }
+      ];
+
+      flagMap.forEach((item, idx) => {
+        if (cmdStr.includes(item.match)) {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'cmd-token' + (idx === 0 ? ' active' : '');
+          btn.textContent = item.match === 'cd "' ? 'cd <folder>' : item.match;
+          btn.addEventListener('click', () => {
+            strip.querySelectorAll('.cmd-token').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            inspector.innerHTML = '<strong>' + item.title + ':</strong> ' + item.text;
+          });
+          strip.appendChild(btn);
+          if (idx === 0) {
+            inspector.innerHTML = '<strong>' + item.title + ':</strong> ' + item.text;
+          }
+        }
+      });
+    }
+
+    function computePocoStatsForPreset(pIdx, params) {
+      const { vcodec, scale, fpsNum, clockMult, threadMult, filterMult, vidDur, crf, bitrate, rcmode, abitrate } = params;
+
+      if (currentMode === 'audio') {
+        const audioFps = 1800 * clockMult * threadMult;
+        const sec = Math.max(0.25, (vidDur * 60) / audioFps);
+        const sizeMB = Math.max(0.4, (abitrate * vidDur) / 8000);
+        return { fps: audioFps, sec, sizeMB, bottleneck: 'Single-pass DSP audio decode/encode on Cortex-A725 + UFS 4.0' };
+      }
+
+      if (vcodec === 'copy') {
+        const estMB = (12 * vidDur) / 8;
+        const ufsSec = Math.max(0.12, estMB / 1800);
+        return { fps: (vidDur * fpsNum) / ufsSec, sec: ufsSec, sizeMB: estMB, bottleneck: 'UFS 4.0 MCQ Sequential I/O (~4,000 MB/s read, zero CPU encode)' };
+      }
+
+      const codecSpeedMult =
+        vcodec === 'libx264' ? 1.0 :
+        vcodec === 'libx265' ? 0.52 :
+        vcodec === 'libsvtav1' ? 0.34 :
+        vcodec === 'libvpx-vp9' ? 0.45 :
+        vcodec === 'prores_ks' ? 1.65 :
+        vcodec === 'mpeg4' ? 2.1 : 1.1;
+
+      const resMult =
+        scale === '2160' ? 0.26 :
+        scale === '1440' ? 0.56 :
+        scale === '720' ? 2.15 :
+        scale === '480' ? 4.2 : 1.0;
+
+      const baseFps = pocoBaseFpsH264[pIdx] || 62;
+      const effectiveFps = Math.max(1.5, baseFps * codecSpeedMult * resMult * clockMult * threadMult * filterMult);
+      const totalFrames = vidDur * fpsNum;
+
+      let rawSec = totalFrames / effectiveFps;
+      if (rawSec > 180 && params.clockMode !== 'sustained') {
+        rawSec = 180 + (rawSec - 180) * 1.14;
+      }
+
+      const codecSizeEff = vcodec === 'libx264' ? 1.0 : (vcodec === 'libx265' ? 0.65 : (vcodec === 'libsvtav1' ? 0.55 : 0.75));
+      const presetCompBonus = [-0.22, -0.16, -0.10, -0.05, -0.02, 0, 0.08, 0.14, 0.20][pIdx] || 0;
+      const resBitrateScale = scale === '2160' ? 3.2 : (scale === '1440' ? 1.7 : (scale === '720' ? 0.55 : (scale === '480' ? 0.3 : 1.0)));
+      const rawMbps = rcmode === 'cbr'
+        ? bitrate
+        : (rcmode === 'lossless' ? 65 * resBitrateScale : 8.5 * Math.pow(2, (18 - crf) / 6) * codecSizeEff * resBitrateScale * (1 - presetCompBonus));
+      const finalMbps = rcmode === 'crf_cap' ? Math.min(bitrate, rawMbps) : rawMbps;
+      const sizeMB = Math.max(0.5, (finalMbps * vidDur) / 8 + (abitrate * vidDur) / 8000);
+
+      const bottleneck =
+        pIdx <= 2 ? 'Fast Lookahead · Low heat on 5000mm² Vapor Chamber' :
+        pIdx <= 5 ? 'Balanced 8-Core Cortex-A725 AVX/NEON SIMD compute' :
+        'Deep RDO & Motion Search · Heavy Prime + Perf cluster load';
+
+      return { fps: effectiveFps, sec: rawSec, sizeMB, bottleneck };
+    }
+
+    function updateAll() {
+      if (currentMode === 'video') {
+        enforceContainerCompatibility();
+      }
+
+      const inPath = (elInFile.value || 'input.mp4').trim();
+      const outBase = (elOutBase.value || 'output').trim().replace(/\.[a-zA-Z0-9]+$/, '');
+      const cont = elContainer.value;
+      const vcodec = elVCodec.value;
+      const rcmode = elRcMode.value;
+      const crf = parseInt(elCrf.value, 10);
+      const bitrate = parseInt(elBitrate.value, 10);
+      const bufsize = bitrate * 2;
+      const pIdx = parseInt(elPreset.value, 10);
+      const preset = presetNames[pIdx] || 'slower';
+      const pixfmt = elPixfmt.value;
+      const tune = elTune.value;
+      const scale = elScale.value;
+      const fps = elFps.value;
+      const ss = elSs.value.trim();
+      const to = elTo.value.trim();
+      const speed = elSpeed.value;
+      const extraVf = elExtraVf.value;
+      const acodec = elVACodec.value;
+      const abitrate = parseInt(elABitrate.value, 10);
+      const ar = elAr.value;
+      const af = elAf.value;
+      const vidDur = parseInt(elVidDur.value, 10) || 30;
+      const clockMode = elClockMode.value;
+      const threadsVal = elThreads.value;
+      const vMute = elVMute.value;
+      const globalMeta = elGlobalMeta.value;
+
+      // Update badges
+      document.getElementById('bdg-v-container').textContent = '.' + cont;
+      document.getElementById('bdg-v-codec').textContent = vcodec;
+      document.getElementById('bdg-rc-mode').textContent = rcmode === 'crf_cap' ? 'CRF + Cap' : (rcmode === 'crf_only' ? 'Pure CRF' : (rcmode === 'cbr' ? 'Target Bitrate' : 'Lossless'));
+      document.getElementById('bdg-crf').textContent = 'CRF ' + crf;
+      document.getElementById('bdg-bitrate').textContent = bitrate + 'M (' + bufsize + 'M buf)';
+      document.getElementById('bdg-preset').textContent = preset;
+      document.getElementById('bdg-pixfmt').textContent = pixfmt;
+      document.getElementById('bdg-v-acodec').textContent = acodec;
+      document.getElementById('bdg-a-bitrate').textContent = abitrate + 'k';
+      document.getElementById('bdg-a-only').textContent = elAOnly.value;
+      document.getElementById('bdg-gif-type').textContent = elGifType.value;
+      document.getElementById('bdg-vid-dur').textContent = formatDurLabel(vidDur);
+
+      const isAudioMuted = (vMute === 'disable' || acodec === 'none');
+      document.getElementById('bdg-v-mute').textContent = isAudioMuted ? 'Muted (-an)' : 'Audio Enabled';
+      document.getElementById('bdg-global-meta').textContent =
+        globalMeta === 'strip_all' ? '-map_metadata -1' :
+        globalMeta === 'strip_deep' ? 'Deep Wipe + Bitexact' : 'Keep Tags';
+
+      document.getElementById('exp-v-mute').innerHTML = isAudioMuted
+        ? '<strong>Audio Disabled (-an):</strong> Strips all audio tracks from the video. Ideal for silent B-roll, car clips before adding music, or cutting file size by ~1.4 MB per minute.'
+        : '<strong>Audio Enabled:</strong> Includes and encodes the audio stream using your chosen codec (' + acodec + '). Switch to "Disable Audio Completely (-an)" above to mute the video.';
+
+      document.getElementById('exp-global-meta').innerHTML =
+        globalMeta === 'strip_all'
+          ? '<strong>Universal Metadata Wipe (-map_metadata -1):</strong> Strips EXIF camera details, GPS coordinates, creation dates, and ID3/container tags from Video, Audio, GIF, WebP, and Image files.'
+          : (globalMeta === 'strip_deep'
+            ? '<strong>Deep Privacy Wipe (-map_metadata -1 -map_chapters -1 -fflags +bitexact):</strong> Removes all metadata, embedded chapters, and FFmpeg encoder software signatures across all formats.'
+            : '<strong>Keep Metadata:</strong> Preserves source container tags, timestamps, and audio ID3/Vorbis metadata.');
+
+      document.getElementById('spec-cpu-str').textContent =
+        clockMode === 'boost35' ? '8x Cortex-A725 (3.50 GHz Boost)' :
+        clockMode === 'stock325' ? '1x3.25 + 3x3.0 + 4x2.1 GHz' :
+        '8x Cortex-A725 (~2.85 GHz Sustained)';
+
+      document.getElementById('poco-summary-tag').textContent =
+        (threadsVal === '0' ? 'All 8 Cortex-A725 Cores' : threadsVal + ' Cortex-A725 Threads') +
+        ' · ' + (clockMode === 'boost35' ? '3.50 GHz Peak' : (clockMode === 'stock325' ? '3.25 GHz Stock' : 'Thermal Sustained'));
+
+      // Update explanation cards
+      const cMeta = containerInfo[cont] || containerInfo.mp4;
+      document.getElementById('exp-v-container').innerHTML =
+        '<strong>What .' + cont + ' does:</strong> ' + cMeta.desc +
+        '<div class="explain-effect"><span>• <strong>Impact:</strong> ' + cMeta.effect + '</span></div>';
+
+      const vMeta = codecInfo[vcodec] || codecInfo.libx264;
+      document.getElementById('exp-v-codec').innerHTML =
+        '<strong>What -c:v ' + vcodec + ' does:</strong> ' + vMeta.desc +
+        '<div class="explain-effect"><span>• <strong>Tradeoff:</strong> ' + vMeta.effect + '</span></div>';
+
+      document.getElementById('exp-rc-mode').innerHTML =
+        rcmode === 'crf_cap'
+          ? '<strong>Constrained CRF (-crf + -maxrate + -bufsize):</strong> Lets FFmpeg allocate bits dynamically for consistent visual quality while clamping peak bitrate spikes at ' + bitrate + ' Mbps.'
+          : (rcmode === 'crf_only'
+            ? '<strong>Pure Quality Mode (-crf):</strong> Prioritizes visual consistency with no artificial ceiling. File size varies depending on how complex your video motion is.'
+            : (rcmode === 'cbr'
+              ? '<strong>Target Average Bitrate (-b:v):</strong> Locks the average video data stream to ' + bitrate + ' Mbps so you can predict exact output megabytes.'
+              : '<strong>Mathematical Lossless (-crf 0):</strong> Zero compression loss; outputs a bit-exact master file.'));
+
+      document.getElementById('exp-crf-detail').innerHTML =
+        '<strong>What -crf ' + crf + ' means right now:</strong> ' +
+        (crf <= 16 ? 'Archival master quality. Virtually zero mosquito noise or banding, but file size grows steeply.' :
+         crf <= 20 ? 'Sweet-spot visually lossless range. High-speed edits and dark gradients stay razor sharp.' :
+         crf <= 25 ? 'Balanced everyday compression. Cuts file size in half vs CRF 18 with minor softening on fine textures.' :
+         'Heavy compression for small file transfers; fast camera motion will show blocky macroblocks.') +
+        '<div class="explain-effect"><span>• <strong>Lowering by 6:</strong> Doubles file size &amp; boosts fine texture retention.</span><span>• <strong>Raising by 6:</strong> Cuts file size in half &amp; softens fast motion.</span></div>';
+
+      document.getElementById('exp-bitrate-detail').innerHTML =
+        '<strong>What ' + bitrate + ' Mbps Bitrate &amp; ' + bufsize + 'M Buffer do:</strong> Bitrate measures how many Megabits of video data play every second (' + (bitrate / 8).toFixed(2) + ' MB/sec ceiling).' +
+        '<div class="explain-effect"><span>• <strong>Raising Bitrate:</strong> Prevents blockiness during speed ramps, rain, foliage, or strobes, but increases file size linearly.</span><span>• <strong>Lowering Bitrate:</strong> Shrinks output megabytes, but setting it too low (&lt;5M at 1080p60) forces the encoder to blur edges.</span></div>';
+
+      document.getElementById('exp-preset-detail').innerHTML =
+        '<strong>What -preset ' + preset + ' does:</strong> Controls how deeply the 8 Cortex-A725 cores analyze motion vectors across adjacent frames.' +
+        '<div class="explain-effect"><span>• <strong>Slower preset (slow / slower / veryslow):</strong> Packs more sharpness into every megabit and shrinks CRF file size by 10-20%, but increases POCO X7 Pro conversion time in Step 4.</span><span>• <strong>Faster preset (ultrafast / veryfast):</strong> Finishes encoding 3x-5x faster on your phone, at the cost of slightly larger files.</span></div>';
+
+      document.getElementById('exp-pixfmt-detail').innerHTML =
+        '<strong>What -pix_fmt ' + pixfmt + ' does:</strong> ' +
+        (pixfmt === 'yuv420p'
+          ? 'Standard 8-bit 4:2:0 color subsampling. Prevents the notorious green/black screen issue on Android hardware decoders and social apps.'
+          : 'High-precision color/bit-depth (' + pixfmt + '). Reduces sky/shadow color banding, though older mobile players may fall back to software decoding.');
+
+      document.getElementById('exp-scale-fps').innerHTML =
+        '<strong>Resolution &amp; Frame Rate Impact:</strong> ' +
+        (fps === '60' ? '60 FPS renders 60 frames every second for buttery-smooth speed ramps, requiring 2x the frame calculations of 30 FPS on the Dimensity 8400-Ultra.' : 'Adjusting resolution or FPS directly scales the number of pixels encoded per second.');
+
+      document.getElementById('exp-filters').innerHTML =
+        '<strong>Sharpness &amp; Filter Pipeline:</strong> ' +
+        (extraVf === 'unsharp' ? 'Applies a 5x5 luma sharpening matrix (unsharp=5:5:0.8) to crisp up edges after scaling.' :
+        (speed === 'optflow_60' ? 'Uses motion-compensated optical flow (minterpolate) to synthesize new intermediate frames for smooth slow-motion.' : 'Combines trimming, speed scaling, and metadata cleanup into a single pass.'));
+
+      document.getElementById('exp-a-bitrate').innerHTML =
+        '<strong>What -b:a ' + abitrate + 'k does:</strong> Allocates ' + abitrate + ' kilobits/sec to the audio stream. 192k AAC or 128k-160k Opus is acoustically indistinguishable from lossless CD audio for 99% of listeners.';
+
+      document.getElementById('exp-audio-extra').innerHTML =
+        '<strong>Sample Rate &amp; DSP Filter:</strong> 48000 Hz is the native clock rate for video tracks; EBU R128 loudnorm balances quiet and loud sections automatically.';
+
+      // Build VF chain
+      const vfList = [];
+      if (scale === '1080_v') vfList.push('scale=1080:1920:flags=lanczos');
+      else if (scale !== 'original') vfList.push('scale=-2:' + scale + ':flags=lanczos');
+
+      if (extraVf === 'pad_9_16') {
+        vfList.push('scale=1080:1920:force_original_aspect_ratio=decrease,pad=1080:1920:(ow-iw)/2:(oh-ih)/2:black');
+      } else if (extraVf === 'unsharp') {
+        vfList.push('unsharp=5:5:0.8:3:3:0.4');
+      } else if (extraVf === 'stabilize') {
+        vfList.push('deshake');
+      }
+
+      if (speed === '2x') vfList.push('setpts=0.5*PTS');
+      else if (speed === '0.5x') vfList.push('setpts=2.0*PTS');
+      else if (speed === 'optflow_60') vfList.push('minterpolate=fps=60:mi_mode=mci:mc_mode=aobmc:me_mode=bidir:vsbmc=1');
+
+      // Build AF chain
+      const afList = [];
+      if (speed === '2x') afList.push('atempo=2.0');
+      else if (speed === '0.5x') afList.push('atempo=0.5');
+      if (af === 'loudnorm') afList.push('loudnorm=I=-16:TP=-1.5:LRA=11');
+      else if (af === 'vol_up') afList.push('volume=4dB');
+      else if (af === 'bass') afList.push('bass=g=5:f=90:w=0.6');
+
+      let timeArgs = '';
+      if (ss) timeArgs += ' -ss ' + ss;
+      if (to) timeArgs += ' -to ' + to;
+
+      let threadArg = threadsVal !== '0' ? ' -threads ' + threadsVal : '';
+      let cmd = '';
+      let outExt = cont;
+
+      if (currentMode === 'video') {
+        const parts = ['ffmpeg' + timeArgs + ' -i "' + inPath + '"'];
+        parts.push('-c:v ' + vcodec);
+        if (threadArg && vcodec !== 'copy') parts.push(threadArg.trim());
+
+        if (vcodec !== 'copy') {
+          if (['libx264', 'libx265'].includes(vcodec)) {
+            parts.push('-preset ' + preset);
+            if (tune !== 'none') parts.push('-tune ' + tune);
+          }
+          if (vcodec === 'prores_ks') {
+            parts.push('-profile:v 2');
+          } else if (['mpeg4', 'mpeg2video'].includes(vcodec)) {
+            parts.push('-b:v ' + bitrate + 'M');
+          } else if (vcodec === 'libtheora') {
+            parts.push('-q:v 7');
+          } else if (vcodec === 'libvpx-vp9') {
+            if (rcmode === 'crf_only') parts.push('-crf ' + crf + ' -b:v 0');
+            else if (rcmode === 'crf_cap') parts.push('-crf ' + crf + ' -b:v ' + bitrate + 'M -maxrate ' + bitrate + 'M -bufsize ' + bufsize + 'M');
+            else parts.push('-b:v ' + bitrate + 'M');
+          } else {
+            if (rcmode === 'lossless') {
+              parts.push('-crf 0');
+            } else if (rcmode === 'crf_only') {
+              parts.push('-crf ' + crf);
+            } else if (rcmode === 'crf_cap') {
+              parts.push('-crf ' + crf + ' -maxrate ' + bitrate + 'M -bufsize ' + bufsize + 'M');
+            } else {
+              parts.push('-b:v ' + bitrate + 'M -maxrate ' + bitrate + 'M -bufsize ' + bufsize + 'M');
+            }
+          }
+
+          if (fps !== 'original') parts.push('-r ' + fps);
+          if (vfList.length > 0) parts.push('-vf "' + vfList.join(',') + '"');
+          parts.push('-pix_fmt ' + pixfmt);
+          if (vcodec === 'libx265' && ['mp4', 'mov'].includes(cont)) {
+            parts.push('-tag:v hvc1');
+          }
+        }
+
+        const metaFlags = (globalMeta === 'strip_deep')
+          ? '-map_metadata -1 -map_chapters -1 -fflags +bitexact'
+          : ((globalMeta === 'strip_all' || extraVf === 'strip_meta') ? '-map_metadata -1' : '');
+
+        if (metaFlags) parts.push(metaFlags);
+        if (['mp4', 'mov'].includes(cont)) parts.push('-movflags +faststart');
+
+        if (isAudioMuted) {
+          parts.push('-an');
+        } else if (acodec === 'copy') {
+          parts.push('-c:a copy');
+        } else {
+          parts.push('-c:a ' + acodec);
+          if (!['flac', 'pcm_s16le'].includes(acodec)) {
+            parts.push('-b:a ' + abitrate + 'k');
+          }
+          if (ar !== 'original') parts.push('-ar ' + ar);
+          if (afList.length > 0) parts.push('-af "' + afList.join(',') + '"');
+        }
+
+        const outFile = outBase + '.' + outExt;
+        parts.push('"' + outFile + '"');
+        cmd = parts.join(' ');
+      } else if (currentMode === 'audio') {
+        const metaFlags = (globalMeta === 'strip_deep')
+          ? ' -map_metadata -1 -map_chapters -1 -fflags +bitexact'
+          : ((globalMeta === 'strip_all' || extraVf === 'strip_meta') ? ' -map_metadata -1' : '');
+        const aFmt = elAOnly.value;
+        const aMap = {
+          mp3: { ext: 'mp3', args: '-c:a libmp3lame -b:a ' + abitrate + 'k', desc: 'MP3 via libmp3lame plays on every audio player made in the last 30 years.' },
+          flac: { ext: 'flac', args: '-c:a flac -compression_level 8', desc: 'FLAC compresses audio to ~55% of WAV size with zero bit loss (100% lossless).' },
+          opus: { ext: 'opus', args: '-c:a libopus -b:a ' + abitrate + 'k', desc: 'Opus is the most advanced lossy codec available, beating MP3 and AAC at every bitrate.' },
+          m4a: { ext: 'm4a', args: '-c:a aac -b:a ' + abitrate + 'k', desc: 'AAC inside an M4A container for clean Android, iOS, and car stereo playback.' },
+          alac: { ext: 'm4a', args: '-c:a alac', desc: 'Apple Lossless Audio Codec inside an M4A container.' },
+          wav: { ext: 'wav', args: '-c:a pcm_s16le', desc: 'Uncompressed 16-bit PCM WAV for instant import into any video/audio editor.' },
+          wav24: { ext: 'wav', args: '-c:a pcm_s24le', desc: 'Uncompressed 24-bit studio master PCM WAV.' },
+          ogg: { ext: 'ogg', args: '-c:a libvorbis -b:a ' + abitrate + 'k', desc: 'Open-source Ogg Vorbis audio.' },
+          ac3: { ext: 'ac3', args: '-c:a ac3 -b:a ' + Math.max(192, abitrate) + 'k', desc: 'Dolby Digital AC-3 stream.' }
+        };
+        const chosen = aMap[aFmt] || aMap.flac;
+        outExt = chosen.ext;
+        document.getElementById('exp-a-only').innerHTML = '<strong>Audio Engine:</strong> ' + chosen.desc;
+        const parts = ['ffmpeg' + timeArgs + ' -i "' + inPath + '" -vn ' + chosen.args];
+        if (ar !== 'original') parts.push('-ar ' + ar);
+        if (afList.length > 0) parts.push('-af "' + afList.join(',') + '"');
+        if (metaFlags) parts.push(metaFlags.trim());
+        parts.push('"' + outBase + '.' + outExt + '"');
+        cmd = parts.join(' ');
+      } else if (currentMode === 'gif') {
+        const metaFlags = (globalMeta === 'strip_deep')
+          ? ' -map_metadata -1 -map_chapters -1 -fflags +bitexact'
+          : ((globalMeta === 'strip_all' || extraVf === 'strip_meta') ? ' -map_metadata -1' : '');
+        const gType = elGifType.value;
+        const gFps = fps === 'original' ? '15' : fps;
+        const gWidth = scale === 'original' ? '640' : (scale === '1080_v' ? '540' : scale);
+        if (gType === 'gif_palette') {
+          outExt = 'gif';
+          cmd = 'ffmpeg' + timeArgs + ' -i "' + inPath + '" -vf "fps=' + gFps + ',scale=' + gWidth + ':-1:flags=lanczos,split[s0][s1];[s0]palettegen=stats_mode=diff[p];[s1][p]paletteuse=dither=bayer:bayer_scale=5"' + metaFlags + ' -loop 0 "' + outBase + '.gif"';
+          document.getElementById('exp-gif-type').innerHTML = '<strong>2-Pass Palette GIF:</strong> Standard FFmpeg GIFs use a generic 256-color table that looks grainy. This filter splits the stream, builds a custom 256-color palette for your exact clip, and renders with Lanczos scaling.';
+        } else if (gType === 'webp_anim') {
+          outExt = 'webp';
+          cmd = 'ffmpeg' + timeArgs + ' -i "' + inPath + '" -vf "fps=' + gFps + ',scale=' + gWidth + ':-1:flags=lanczos" -c:v libwebp -lossless 0 -compression_level 6 -q:v 80' + metaFlags + ' -loop 0 -an "' + outBase + '.webp"';
+          document.getElementById('exp-gif-type').innerHTML = '<strong>Animated WebP:</strong> Supports 24-bit RGB with alpha transparency at roughly half the file size of an animated GIF.';
+        } else if (gType === 'thumb_jpg') {
+          outExt = 'jpg';
+          const seekTime = ss || '00:00:02';
+          cmd = 'ffmpeg -ss ' + seekTime + ' -i "' + inPath + '" -frames:v 1 -q:v 2' + metaFlags + ' "' + outBase + '_thumb.jpg"';
+          document.getElementById('exp-gif-type').innerHTML = '<strong>High-Sharpness JPEG Frame (-q:v 2):</strong> Seeks directly to the timestamp and extracts a single crisp thumbnail frame.';
+        } else if (gType === 'thumb_png') {
+          outExt = 'png';
+          const seekTime = ss || '00:00:02';
+          cmd = 'ffmpeg -ss ' + seekTime + ' -i "' + inPath + '" -frames:v 1' + metaFlags + ' "' + outBase + '_thumb.png"';
+          document.getElementById('exp-gif-type').innerHTML = '<strong>Lossless PNG Frame Snapshot:</strong> Extracts a bit-exact uncompressed RGB frame for thumbnails or color grading references.';
+        } else {
+          outExt = 'png';
+          cmd = 'ffmpeg' + timeArgs + ' -i "' + inPath + '"' + metaFlags + ' "' + outBase + '_%04d.png"';
+          document.getElementById('exp-gif-type').innerHTML = '<strong>PNG Frame Sequence:</strong> Exports every frame as a numbered PNG (0001.png, 0002.png...) for external compositing.';
+        }
+      }
+
+      if (batchMode && currentMode !== 'encyclopedia') {
+        const inExt = (inPath.includes('.') ? inPath.split('.').pop() : detectedFolderExt) || 'mp4';
+        const innerCmd = cmd
+          .replace('"' + inPath + '"', '"$f"')
+          .replace('"' + outBase + '.' + outExt + '"', '"converted_${f%.*}.' + outExt + '"');
+        cmd = 'for f in *.' + inExt + '; do ' + innerCmd + '; done';
+      }
+
+      const rawDir = elInCustomDir.value.trim();
+      const activeDir = rawDir.startsWith('~/') ? ('$HOME/' + rawDir.slice(2)) : (rawDir === '~' ? '$HOME' : rawDir);
+      if (activeDir && currentMode !== 'encyclopedia' && !inPath.startsWith('/') && !inPath.startsWith('$HOME/')) {
+        cmd = 'cd "' + activeDir + '" && ' + cmd;
+      }
+      document.getElementById('insp-path-out').textContent = activeDir || 'Current Folder (Pick a file in Step 1)';
+      document.getElementById('bdg-path-mode').textContent = batchMode ? 'Folder Batch' : 'Auto Exact Path';
+
+      elCmdBox.value = cmd;
+      elCmdBox.textContent = cmd;
+      buildTokensAndExplain(cmd);
+
+      // Compute POCO X7 Pro Hardware Conversion Time & Benchmark Table
+      const fpsNum = fps === 'original' ? 60 : parseInt(fps, 10);
+      const clockMult = clockMode === 'boost35' ? 1.077 : (clockMode === 'stock325' ? 1.0 : 0.86);
+      const threadMult = threadsVal === '0' ? 1.0 : (threadsVal === '6' ? 0.82 : 0.58);
+      const filterMult = speed === 'optflow_60' ? 0.14 : (extraVf === 'stabilize' ? 0.55 : (extraVf === 'unsharp' ? 0.86 : 1.0));
+
+      const simParams = {
+        vcodec, scale, fpsNum, clockMult, threadMult, filterMult, vidDur, crf, bitrate, rcmode, abitrate, clockMode
+      };
+
+      const activeStats = computePocoStatsForPreset(pIdx, simParams);
+      const rtRatio = (vidDur / Math.max(0.05, activeStats.sec)).toFixed(2);
+      const ufsIoSec = Math.max(0.01, activeStats.sizeMB / 2800).toFixed(2);
+
+      // RAM & Battery calculation for POCO X7 Pro
+      const ramMB = scale === '2160' ? (vcodec === 'libx265' ? 1420 : 980) : (vcodec === 'libx265' ? 680 : 460);
+      const battPct = vcodec === 'copy' ? 0.01 : Math.min(100, (activeStats.sec / 3600) * (threadsVal === '4' ? 18 : 28));
+
+      // Quality & Speed scores
+      let qualScore = 95;
+      let speedScore = Math.max(10, Math.min(98, Math.round(92 - pIdx * 10 - (vcodec === 'libx265' ? 15 : 0) - (vcodec === 'libsvtav1' ? 22 : 0))));
+      if (vcodec === 'copy' || rcmode === 'lossless') {
+        qualScore = 100;
+        if (vcodec === 'copy') speedScore = 99;
+      } else {
+        const eff = vcodec === 'libx264' ? 1.0 : (vcodec === 'libx265' ? 0.65 : (vcodec === 'libsvtav1' ? 0.55 : 0.75));
+        const rawRate = rcmode === 'cbr' ? bitrate : 8.5 * Math.pow(2, (18 - crf) / 6) * eff;
+        const capDrop = (rcmode === 'crf_cap' && rawRate > bitrate) ? Math.min(25, (rawRate - bitrate) * 2) : 0;
+        qualScore = Math.max(35, Math.min(99, Math.round(100 - (crf - 14) * 2.4 - capDrop + (extraVf === 'unsharp' ? 2 : 0))));
+      }
+
+      let compatText = 'Universal (100%)';
+      let compatScore = 100;
+      if (cont === 'mp4' && vcodec === 'libx264' && pixfmt === 'yuv420p') {
+        compatText = 'Universal (100%)';
+        compatScore = 100;
+      } else if (['mkv', 'webm', 'mov'].includes(cont)) {
+        compatText = 'Modern Players (88%)';
+        compatScore = 88;
+      } else {
+        compatText = 'Specialized (70%)';
+        compatScore = 70;
+      }
+
+      document.getElementById('kpi-time-val').textContent = formatTimeSec(activeStats.sec);
+      document.getElementById('kpi-time-bar').style.width = Math.min(100, Math.max(12, Math.round(100 - activeStats.sec / 3))) + '%';
+      document.getElementById('kpi-time-text').textContent =
+        vcodec === 'copy'
+          ? 'Instant UFS 4.0 stream copy (' + ufsIoSec + 's I/O)'
+          : '~' + Math.round(activeStats.fps) + ' fps on Cortex-A725';
+
+      document.getElementById('kpi-speed-val').textContent = vcodec === 'copy' ? 'Instant' : rtRatio + 'x RT';
+      document.getElementById('kpi-speed-bar').style.width = speedScore + '%';
+      document.getElementById('kpi-speed-text').textContent = vcodec === 'copy' ? 'Zero CPU re-encoding' : 'Preset: ' + preset;
+
+      document.getElementById('kpi-qual-val').textContent = qualScore + ' / 100';
+      document.getElementById('kpi-qual-bar').style.width = qualScore + '%';
+      document.getElementById('kpi-qual-text').textContent = qualScore >= 93 ? 'Visually lossless master retention' : (qualScore >= 80 ? 'Clean social/streaming quality' : 'High compression artifacts');
+
+      document.getElementById('kpi-size-val').textContent = activeStats.sizeMB.toFixed(1) + ' MB';
+      if (sourceFileSizeMB > 0) {
+        const diffPct = Math.round(((activeStats.sizeMB - sourceFileSizeMB) / sourceFileSizeMB) * 100);
+        const sign = diffPct <= 0 ? diffPct + '% smaller' : '+' + diffPct + '% larger';
+        document.getElementById('insp-comparison').textContent = 'Source ' + sourceFileSizeMB.toFixed(1) + ' MB → Est. ' + activeStats.sizeMB.toFixed(1) + ' MB (' + sign + ')';
+        document.getElementById('kpi-size-text').textContent = sign + ' vs source · UFS 4.0 I/O ~' + ufsIoSec + 's';
+      } else {
+        document.getElementById('kpi-size-text').textContent = 'UFS 4.0 write time: ~' + ufsIoSec + ' sec';
+      }
+      document.getElementById('kpi-size-bar').style.width = Math.min(100, Math.round(activeStats.sizeMB * 1.1)) + '%';
+
+      document.getElementById('kpi-batt-val').textContent = '~' + battPct.toFixed(1) + '% Batt';
+      document.getElementById('kpi-batt-bar').style.width = Math.min(100, Math.max(6, Math.round(battPct * 8))) + '%';
+      document.getElementById('kpi-batt-text').textContent = '~' + ramMB + ' MB LPDDR5X · 6550 mAh';
+
+      document.getElementById('kpi-compat-val').textContent = compatText;
+      document.getElementById('kpi-compat-bar').style.width = compatScore + '%';
+      document.getElementById('kpi-compat-text').textContent = pixfmt === 'yuv420p' ? '8-bit yuv420p safe decode' : 'Requires 10-bit/4:2:2 decoder';
+
+      // Populate POCO X7 Pro Preset Comparison Table
+      const benchBody = document.getElementById('poco-bench-tbody');
+      benchBody.innerHTML = '';
+      const tableIndices = [0, 2, 4, 5, 6, 7, 8];
+      tableIndices.forEach(idx => {
+        const st = computePocoStatsForPreset(idx, Object.assign({}, simParams, { vcodec: vcodec === 'copy' ? 'libx264' : vcodec }));
+        const tr = document.createElement('tr');
+        if (vcodec !== 'copy' && idx === pIdx) tr.className = 'active-bench-row';
+        tr.innerHTML =
+          '<td><code>-preset ' + presetNames[idx] + '</code>' + (idx === pIdx && vcodec !== 'copy' ? ' <strong>(Selected)</strong>' : '') + '</td>' +
+          '<td><strong>~' + Math.round(st.fps) + ' fps</strong> (' + (vidDur / st.sec).toFixed(2) + 'x RT)</td>' +
+          '<td><strong>' + formatTimeSec(st.sec) + '</strong></td>' +
+          '<td>' + st.sizeMB.toFixed(1) + ' MB</td>' +
+          '<td>' + st.bottleneck + '</td>';
+        benchBody.appendChild(tr);
+      });
+
+      const copySt = computePocoStatsForPreset(5, Object.assign({}, simParams, { vcodec: 'copy' }));
+      const trCopy = document.createElement('tr');
+      if (vcodec === 'copy') trCopy.className = 'active-bench-row';
+      trCopy.innerHTML =
+        '<td><code>-c:v copy</code>' + (vcodec === 'copy' ? ' <strong>(Selected)</strong>' : '') + '</td>' +
+        '<td><strong>UFS 4.0 Bus Speed</strong></td>' +
+        '<td><strong>' + formatTimeSec(copySt.sec) + '</strong></td>' +
+        '<td>' + copySt.sizeMB.toFixed(1) + ' MB (Original)</td>' +
+        '<td>' + copySt.bottleneck + '</td>';
+      benchBody.appendChild(trCopy);
+    }
+
+    function switchMode(mode) {
+      currentMode = mode;
+      document.querySelectorAll('.mode-tab').forEach(t => {
+        t.classList.toggle('active', t.getAttribute('data-mode') === mode);
+      });
+
+      const isEncyc = mode === 'encyclopedia';
+      document.getElementById('builder-workspace').classList.toggle('hidden', isEncyc);
+      document.getElementById('encyclopedia-workspace').classList.toggle('hidden', !isEncyc);
+
+      document.getElementById('grp-v-container').classList.toggle('hidden', mode !== 'video');
+      document.getElementById('grp-v-codec').classList.toggle('hidden', mode !== 'video');
+      document.getElementById('grp-v-mute').classList.toggle('hidden', mode !== 'video');
+      document.getElementById('grp-a-only-format').classList.toggle('hidden', mode !== 'audio');
+      document.getElementById('grp-gif-mode').classList.toggle('hidden', mode !== 'gif');
+      document.getElementById('panel-rate').classList.toggle('hidden', mode !== 'video');
+      document.getElementById('panel-audio').classList.toggle('hidden', mode === 'gif');
+
+      updateAll();
+    }
+
+    function renderEncyclopedia(filterText = '') {
+      const q = filterText.trim().toLowerCase();
+      const tbody = document.getElementById('encyc-tbody');
+      tbody.innerHTML = '';
+      encyclopediaEntries
+        .filter(e => !q || e.flag.toLowerCase().includes(q) || e.cat.toLowerCase().includes(q) || e.mean.toLowerCase().includes(q) || e.effect.toLowerCase().includes(q))
+        .forEach(e => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = '<td><code>' + e.flag + '</code></td><td>' + e.cat + '</td><td>' + e.mean + '</td><td>' + e.effect + '</td>';
+          tbody.appendChild(tr);
+        });
+    }
+
+    document.querySelectorAll('.mode-tab').forEach(tab => {
+      tab.addEventListener('click', () => switchMode(tab.getAttribute('data-mode')));
+    });
+
+    [
+      elContainer, elVCodec, elAOnly, elGifType, elRcMode, elCrf, elBitrate,
+      elPreset, elPixfmt, elTune, elScale, elFps, elSs, elTo, elSpeed,
+      elExtraVf, elVACodec, elABitrate, elAr, elAf, elInFile, elOutBase,
+      elVidDur, elClockMode, elThreads, elGlobalMeta
+    ].forEach(el => {
+      el.addEventListener('input', updateAll);
+      el.addEventListener('change', updateAll);
+    });
+
+    elVMute.addEventListener('change', () => {
+      if (elVMute.value === 'disable') {
+        elVACodec.value = 'none';
+      } else if (elVACodec.value === 'none') {
+        elVACodec.value = (elContainer.value === 'webm') ? 'libopus' : 'aac';
+      }
+      updateAll();
+    });
+
+    elVACodec.addEventListener('change', () => {
+      elVMute.value = (elVACodec.value === 'none') ? 'disable' : 'keep';
+      updateAll();
+    });
+
+    document.querySelectorAll('.dur-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.dur-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        elVidDur.value = btn.getAttribute('data-dur');
+        updateAll();
+      });
+    });
+
+    document.querySelectorAll('[data-quick]').forEach(chip => {
+      chip.addEventListener('click', () => {
+        document.querySelectorAll('[data-quick]').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        const q = chip.getAttribute('data-quick');
+        if (q === 'reels60') {
+          switchMode('video');
+          elContainer.value = 'mp4'; elVCodec.value = 'libx264'; elRcMode.value = 'crf_cap';
+          elCrf.value = '18'; elBitrate.value = '12'; elPreset.value = '7'; elFps.value = '60';
+          elPixfmt.value = 'yuv420p'; elVACodec.value = 'aac'; elVMute.value = 'keep'; elABitrate.value = '192';
+        } else if (q === 'hevc_archive') {
+          switchMode('video');
+          elContainer.value = 'mkv'; elVCodec.value = 'libx265'; elRcMode.value = 'crf_only';
+          elCrf.value = '20'; elPreset.value = '6'; elFps.value = 'original';
+          elPixfmt.value = 'yuv420p10le'; elVACodec.value = 'flac'; elVMute.value = 'keep';
+        } else if (q === 'remux') {
+          switchMode('video');
+          elContainer.value = 'mp4'; elVCodec.value = 'copy'; elVACodec.value = 'copy'; elVMute.value = 'keep';
+        } else if (q === 'whatsapp') {
+          switchMode('video');
+          elContainer.value = 'mp4'; elVCodec.value = 'libx264'; elRcMode.value = 'crf_cap';
+          elCrf.value = '25'; elBitrate.value = '3'; elPreset.value = '4'; elScale.value = '720'; elFps.value = '30';
+        } else if (q === 'prores') {
+          switchMode('video');
+          elContainer.value = 'mov'; elVCodec.value = 'prores_ks'; elVACodec.value = 'pcm_s16le'; elVMute.value = 'keep';
+        } else if (q === 'flac_audio') {
+          switchMode('audio');
+          elAOnly.value = 'flac';
+        }
+        updateAll();
+      });
+    });
+
+    document.getElementById('btn-batch-toggle').addEventListener('click', function() {
+      setSelectionModeUI(!batchMode);
+    });
+
+    document.getElementById('btn-copy-cmd').addEventListener('click', copyCommandBulletproof);
+
+    document.getElementById('btn-select-cmd').addEventListener('click', () => {
+      const text = elCmdBox.value || '';
+      elCmdBox.focus();
+      elCmdBox.select();
+      elCmdBox.setSelectionRange(0, text.length);
+      showToast('Command highlighted — tap Copy on your keyboard or popup!');
+    });
+
+    elCmdBox.addEventListener('click', () => {
+      const text = elCmdBox.value || '';
+      elCmdBox.select();
+      elCmdBox.setSelectionRange(0, text.length);
+    });
+
+    document.getElementById('btn-export-sh').addEventListener('click', () => {
+      const cmd = elCmdBox.value || elCmdBox.textContent;
+      const scriptContent = '#!/data/data/com.termux/files/usr/bin/bash\n# Generated by FFmpeg Offline Studio for POCO X7 Pro\nset -e\n' + cmd + '\necho "FFmpeg processing complete!"\n';
+      const blob = new Blob([scriptContent], { type: 'text/x-shellscript' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'run_ffmpeg.sh';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('Downloaded run_ffmpeg.sh for Termux!');
+    });
+
+    document.getElementById('btn-save-html').addEventListener('click', () => {
+      const htmlContent = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+      const blob = new Blob([htmlContent], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'ffmpeg_offline_studio.html';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('Saved offline HTML file!');
+    });
+
+    document.getElementById('btn-theme').addEventListener('click', () => {
+      const cur = document.documentElement.getAttribute('data-theme');
+      const next = cur === 'light' ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', next);
+      try { localStorage.setItem('ffmpeg_studio_theme', next); } catch (e) {}
+    });
+
+    document.getElementById('in-encyc-search').addEventListener('input', function() {
+      renderEncyclopedia(this.value);
+    });
+
+    try {
+      const savedTheme = localStorage.getItem('ffmpeg_studio_theme');
+      if (savedTheme) document.documentElement.setAttribute('data-theme', savedTheme);
+    } catch (e) {}
+
+    function setSelectionModeUI(isFolder) {
+      batchMode = isFolder;
+      const btnBatch = document.getElementById('btn-batch-toggle');
+      btnBatch.textContent = batchMode ? 'Batch Folder Loop (*.ext)' : 'Single File Mode';
+      btnBatch.classList.toggle('btn-primary', batchMode);
+      document.getElementById('bdg-pick-type').textContent = isFolder ? 'Folder Batch' : 'Single File';
+      document.getElementById('lbl-picker-title').textContent = isFolder ? 'Choose Folder (Batch)' : 'Choose File or Folder';
+      updateAll();
+    }
+
+    // Native Android APK Bridge callback — receives EXACT real path + MediaMetadataRetriever info from Kotlin!
+    window.onAndroidPathPicked = function(dirPath, fileName, isFolder, metaJson) {
+      setSelectionModeUI(!!isFolder);
+      elInCustomDir.value = dirPath || '';
+      if (fileName) {
+        elInFile.value = fileName;
+        elOutBase.value = fileName.replace(/\.[^/.]+$/, '') + '_converted';
+      }
+      if (metaJson) {
+        try {
+          const m = typeof metaJson === 'string' ? JSON.parse(metaJson) : metaJson;
+          if (m.format) document.getElementById('insp-format').textContent = m.format;
+          if (m.signature) document.getElementById('insp-Signature').textContent = m.signature;
+          if (m.bitrateStr) document.getElementById('insp-bitrate').textContent = m.bitrateStr;
+          if (m.bitrateGrade) document.getElementById('insp-bitrate-grade').textContent = m.bitrateGrade;
+          if (m.resStr) document.getElementById('insp-res').textContent = m.resStr;
+          if (m.durSizeStr) document.getElementById('insp-dur-size').textContent = m.durSizeStr;
+          if (m.sizeMB && m.sizeMB > 0) sourceFileSizeMB = m.sizeMB;
+          if (m.durSec && m.durSec > 0) {
+            elVidDur.value = String(Math.max(5, Math.min(900, Math.round(m.durSec))));
+          }
+          if (m.queueText) document.getElementById('insp-queue-count').textContent = m.queueText;
+          document.getElementById('insp-status-badge').textContent = 'Exact Path & Stream Read ✓';
+        } catch (e) {}
+      }
+      updateAll();
+      showToast('Exact path captured: ' + (dirPath || fileName));
+    };
+
+    elBtnOpenFile.addEventListener('click', () => {
+      setSelectionModeUI(false);
+      if (window.AndroidBridge && typeof window.AndroidBridge.pickFile === 'function') {
+        window.AndroidBridge.pickFile();
+      } else {
+        elInpNativeFile.click();
+      }
+    });
+
+    elBtnOpenFolder.addEventListener('click', () => {
+      setSelectionModeUI(true);
+      if (window.AndroidBridge && typeof window.AndroidBridge.pickFolder === 'function') {
+        window.AndroidBridge.pickFolder();
+      } else {
+        elInpNativeFolder.click();
+      }
+    });
+
+    elInCustomDir.addEventListener('input', updateAll);
+
+    async function detectBinarySignature(file) {
+      try {
+        const slice = file.slice(0, 4096);
+        const buf = await slice.arrayBuffer();
+        const bytes = new Uint8Array(buf);
+        let ascii = '';
+        for (let i = 0; i < bytes.length; i++) {
+          const c = bytes[i];
+          ascii += (c >= 32 && c <= 126) ? String.fromCharCode(c) : '.';
+        }
+        const codecs = [];
+        if (ascii.includes('avc1') || ascii.includes('H264') || ascii.includes('x264')) codecs.push('H.264/avc1');
+        if (ascii.includes('hvc1') || ascii.includes('hev1') || ascii.includes('x265')) codecs.push('HEVC/hvc1');
+        if (ascii.includes('av01')) codecs.push('AV1/av01');
+        if (ascii.includes('vp09') || ascii.includes('VP90')) codecs.push('VP9');
+        if (ascii.includes('mp4a')) codecs.push('AAC/mp4a');
+        if (ascii.includes('Opus') || ascii.includes('opus')) codecs.push('Opus');
+        if (ascii.includes('fLaC')) codecs.push('FLAC');
+        if (bytes[0] === 0x1A && bytes[1] === 0x45 && bytes[2] === 0xDF && bytes[3] === 0xA3) {
+          codecs.unshift('Matroska/EBML');
+        } else if (ascii.slice(4, 8) === 'ftyp') {
+          codecs.unshift('ISOBMFF/' + ascii.slice(8, 12).trim());
+        } else if (ascii.startsWith('ID3')) {
+          codecs.unshift('MP3/ID3v2');
+        } else if (ascii.startsWith('RIFF')) {
+          codecs.unshift('RIFF/WAV/AVI');
+        } else if (ascii.startsWith('OggS')) {
+          codecs.unshift('Ogg Stream');
+        }
+        return codecs.length > 0 ? codecs.join(' · ') : 'Standard Media Stream';
+      } catch (e) {
+        return 'Local Media Stream';
+      }
+    }
+
+    function gradeBitrate(mbps, height, isAudio) {
+      if (isAudio) {
+        const kbps = Math.round(mbps * 1000);
+        if (kbps >= 500) return 'Lossless / Studio Bitrate (' + kbps + ' kbps)';
+        if (kbps >= 192) return 'High Quality Audio (' + kbps + ' kbps)';
+        if (kbps >= 128) return 'Standard Streaming Audio (' + kbps + ' kbps)';
+        return 'Compact Voice / Low Bitrate (' + kbps + ' kbps)';
+      }
+      const h = height || 1080;
+      if (h >= 2160) {
+        if (mbps > 35) return 'High Camera Master Bitrate (Great for CRF compression)';
+        if (mbps >= 15) return 'Normal 4K Streaming Bitrate';
+        return 'Already Heavily Compressed 4K';
+      }
+      if (mbps > 16) return 'High / Uncompressed Camera Bitrate (Saves 40-60% via CRF 18)';
+      if (mbps >= 6) return 'Normal 1080p Bitrate (Balanced)';
+      return 'Low / Pre-Compressed Bitrate (Use CRF 18-20 to avoid double loss)';
+    }
+
+    async function inspectSelectedFile(file, folderSummary) {
+      if (!file) return;
+      const ext = (file.name.split('.').pop() || 'mp4').toLowerCase();
+      const baseName = file.name.replace(/\.[^/.]+$/, '');
+      const sizeMB = file.size / (1024 * 1024);
+      sourceFileSizeMB = sizeMB;
+
+      elInFile.value = file.name;
+      elOutBase.value = baseName + '_converted';
+
+      if (file.webkitRelativePath && file.webkitRelativePath.includes('/')) {
+        const relParts = file.webkitRelativePath.split('/');
+        relParts.pop();
+        if (relParts.length > 0) {
+          elInCustomDir.value = relParts.join('/');
+        }
+      }
+
+      const sig = await detectBinarySignature(file);
+      document.getElementById('insp-format').textContent = ext.toUpperCase() + ' (' + (file.type || 'media/' + ext) + ')';
+      document.getElementById('insp-Signature').textContent = sig;
+      document.getElementById('insp-status-badge').textContent = folderSummary
+        ? 'Step 2 Complete: Folder Read (' + folderSummary.count + ' files)'
+        : 'Step 2 Complete: Inspected ' + file.name;
+
+      const isAudioFile = ['mp3', 'flac', 'opus', 'm4a', 'wav', 'ogg', 'ac3', 'aac'].includes(ext) || (file.type && file.type.startsWith('audio/'));
+      const isImageFile = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext) || (file.type && file.type.startsWith('image/'));
+
+      if (isImageFile) {
+        document.getElementById('insp-bitrate').textContent = sizeMB.toFixed(2) + ' MB Image';
+        document.getElementById('insp-bitrate-grade').textContent = 'Still / Animated Image File';
+        document.getElementById('insp-dur-size').textContent = sizeMB.toFixed(2) + ' MB';
+        updateAll();
+        return;
+      }
+
+      const mediaEl = document.createElement(isAudioFile ? 'audio' : 'video');
+      mediaEl.preload = 'metadata';
+      const objUrl = URL.createObjectURL(file);
+
+      mediaEl.onloadedmetadata = function() {
+        const dur = (mediaEl.duration && isFinite(mediaEl.duration) && mediaEl.duration > 0) ? mediaEl.duration : 30;
+        const vw = mediaEl.videoWidth || 0;
+        const vh = mediaEl.videoHeight || 0;
+        URL.revokeObjectURL(objUrl);
+
+        const mbps = (file.size * 8) / (dur * 1000000);
+        sourceBitrateMbps = mbps;
+
+        if (isAudioFile) {
+          document.getElementById('insp-bitrate').textContent = Math.round(mbps * 1000) + ' kbps';
+          document.getElementById('insp-res').textContent = 'Audio Stream Only';
+          document.getElementById('insp-fps-note').textContent = 'Switch to Mode 3B for Audio tools';
+        } else {
+          document.getElementById('insp-bitrate').textContent = mbps.toFixed(2) + ' Mbps';
+          const gcd = (a, b) => b === 0 ? a : gcd(b, a % b);
+          const g = (vw && vh) ? gcd(vw, vh) : 1;
+          const aspect = (vw && vh) ? (vw / g) + ':' + (vh / g) : 'Video';
+          document.getElementById('insp-res').textContent = (vw && vh) ? (vw + ' × ' + vh + ' (' + aspect + ')') : 'Video Stream';
+          document.getElementById('insp-fps-note').textContent = (vh >= 2160 ? '4K UHD Source' : (vh >= 1080 || vw >= 1080 ? 'Full HD Source' : 'SD/HD Source'));
+        }
+
+        document.getElementById('insp-bitrate-grade').textContent = gradeBitrate(mbps, Math.max(vw, vh), isAudioFile);
+        document.getElementById('insp-dur-size').textContent = dur.toFixed(1) + 's · ' + sizeMB.toFixed(2) + ' MB';
+
+        const totalDur = folderSummary ? folderSummary.totalDurEst(dur) : Math.round(dur);
+        elVidDur.value = String(Math.max(5, Math.min(900, totalDur)));
+        document.querySelectorAll('.dur-btn').forEach(b => b.classList.remove('active'));
+        updateAll();
+        showToast('Step 2 Updated: ' + file.name + ' (' + mbps.toFixed(1) + ' Mbps, ' + dur.toFixed(1) + 's)');
+      };
+
+      mediaEl.onerror = function() {
+        URL.revokeObjectURL(objUrl);
+        const estDur = Math.max(5, Math.round(sizeMB / 1.2));
+        const mbps = (file.size * 8) / (estDur * 1000000);
+        document.getElementById('insp-bitrate').textContent = '~' + mbps.toFixed(1) + ' Mbps (Est)';
+        document.getElementById('insp-bitrate-grade').textContent = 'Container header read (' + sig + ')';
+        document.getElementById('insp-dur-size').textContent = sizeMB.toFixed(2) + ' MB';
+        updateAll();
+        showToast('Step 2 Updated: ' + file.name + ' (' + sizeMB.toFixed(1) + ' MB)');
+      };
+
+      mediaEl.src = objUrl;
+    }
+
+    elInpNativeFile.addEventListener('change', function() {
+      if (this.files && this.files.length > 0) {
+        setSelectionModeUI(false);
+        document.getElementById('insp-queue-count').textContent = '1 file: ' + this.files[0].name;
+        inspectSelectedFile(this.files[0], null);
+      }
+    });
+
+    elInpNativeFolder.addEventListener('change', function() {
+      if (this.files && this.files.length > 0) {
+        const allFiles = Array.from(this.files);
+        const mediaExts = ['mp4', 'mkv', 'webm', 'mov', 'avi', 'flv', 'ts', 'ogv', '3gp', 'mp3', 'flac', 'opus', 'm4a', 'wav', 'ogg', 'ac3'];
+        const mediaFiles = allFiles.filter(f => {
+          const ext = (f.name.split('.').pop() || '').toLowerCase();
+          return mediaExts.includes(ext);
+        });
+        const targetList = mediaFiles.length > 0 ? mediaFiles : allFiles;
+        const firstFile = targetList[0];
+        const extCounts = {};
+        let totalBytes = 0;
+        targetList.forEach(f => {
+          totalBytes += f.size;
+          const e = (f.name.split('.').pop() || 'mp4').toLowerCase();
+          extCounts[e] = (extCounts[e] || 0) + 1;
+        });
+        const topExt = Object.keys(extCounts).sort((a, b) => extCounts[b] - extCounts[a])[0] || 'mp4';
+        detectedFolderExt = topExt;
+
+        setSelectionModeUI(true);
+        const totalMB = (totalBytes / (1024 * 1024)).toFixed(1);
+        document.getElementById('insp-queue-count').textContent = targetList.length + ' files (' + totalMB + ' MB total · *.' + topExt + ')';
+
+        inspectSelectedFile(firstFile, {
+          count: targetList.length,
+          totalDurEst: (singleDur) => Math.round(singleDur * targetList.length)
+        });
+      }
+    });
+
+    renderEncyclopedia();
+    updateAll();
+    showWizardStep(1);
+  </script>
+</body>
+</html>
